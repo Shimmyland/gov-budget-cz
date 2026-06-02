@@ -1,0 +1,214 @@
+// gov-budget-cz — DB schema
+// Vizualizace: https://dbdiagram.io (importuj tento soubor)
+// Detailní popis: docs/db-schema.md
+//
+// Poznámka k překladům: name_cs je uložen v dimenzionálních tabulkách (kde je),
+// anglické překlady a popisné texty žijí v JSON slovnících (klíč = slug), ne v DB.
+// Tabulky chapters a categories nemají name_cs vůbec — jejich slug je čistě i18n klíč.
+
+// ─── SPRÁVNÍ TŘÍDĚNÍ ──────────────────────────────────────────────────────────
+
+Table chapters {
+  id   integer     [primary key]
+  code varchar(20) [not null, unique, note: '"333" = MŠMT, "313" = MPSV']
+  slug varchar(100)[not null, unique, note: 'i18n klíč; název žije v JSON slovníku']
+}
+
+Table chapter_org_units {
+  id         integer     [primary key]
+  chapter_id integer     [not null]
+  code       varchar(20) [not null, note: 'interní kód OSS']
+  name_cs    text        [not null]
+
+  indexes {
+    (chapter_id, code) [unique]
+  }
+}
+
+// ─── FUNKČNÍ TŘÍDĚNÍ ──────────────────────────────────────────────────────────
+// Zdroj kódů + name_cs: vyhláška č. 412/2021 Sb., příloha č. 3.
+// Anglické názvy COFOG (volitelně): Eurostat RAMON / UN Statistics Division — uloženy v JSON, ne v DB.
+// Poznámka: slug může být v budoucnu redundantní vůči code — viz db-schema.md.
+
+Table functional_divisions {
+  id      integer     [primary key]
+  code    varchar(2)  [not null, unique, note: '"31" = Vzdělávání; "00" = placeholder pro příjmy bez funkčního třídění']
+  slug    varchar(100)[not null, unique]
+  name_cs text        [not null]
+}
+
+Table functional_subdivisions {
+  id          integer     [primary key]
+  division_id integer     [not null]
+  code        varchar(3)  [not null, unique, note: '"314" = Vzdělávání jinde nezařazené']
+  slug        varchar(100)[not null, unique]
+  name_cs     text        [not null]
+}
+
+Table functional_paragraphs {
+  id             integer     [primary key]
+  subdivision_id integer     [not null]
+  code           varchar(4)  [not null, unique, note: '"3141" = Vysoké školy; "0000" = placeholder pro příjmy']
+  slug           varchar(100)[not null, unique]
+  name_cs        text        [not null]
+}
+
+// ─── DRUHOVÉ TŘÍDĚNÍ ──────────────────────────────────────────────────────────
+// Poznámka: slug může být v budoucnu redundantní vůči code — viz db-schema.md.
+
+Table economic_classes {
+  id      integer     [primary key]
+  code    char(1)     [not null, unique, note: '"5" = Běžné výdaje, "1" = Daňové příjmy']
+  slug    varchar(100)[not null, unique]
+  name_cs text        [not null]
+}
+
+Table economic_groups {
+  id       integer     [primary key]
+  class_id integer     [not null]
+  code     varchar(2)  [not null, unique, note: '"50" = Výdaje na zboží a služby']
+  slug     varchar(100)[not null, unique]
+  name_cs  text        [not null]
+}
+
+Table economic_items {
+  id       integer     [primary key]
+  group_id integer     [not null]
+  code     varchar(4)  [not null, unique, note: '"5011" = Platy zaměstnanců']
+  slug     varchar(100)[not null, unique]
+  name_cs  text        [not null]
+}
+
+// ─── TABULKA FAKTŮ ────────────────────────────────────────────────────────────
+// Jeden řádek = plně kvalifikovaný MIS-RIS tuple
+//   (rok, měsíc, OSS, paragraf, položka, podkladové, nástrojové, doplňkové, programové, účelové)
+// + 5 rozpočtových stavů side-by-side jako NULLable sloupce (NULL když MIS-RIS daný stav
+// pro tuple nevyplňuje).
+//
+// Refactor 0020: dříve byl design "1 řádek per (rok, OSS, paragraf, položka) × 2 (is_approved flag)".
+// Nový design zachycuje všech 5 rozpočtových stavů + 5 dalších MIS-RIS dimenzí. Detail v db-schema.md.
+//
+// Hodnoty jsou v Kč (raw units, ne tisíce — ověřeno proti zákonu 434/2024 Sb.). Mohou být záporné
+// (vratky a korekce). value_final je vždy NULL pro příjmové třídy 1–4 (NNV se týkají jen výdajů).
+//
+// Proč zde není chapter_id:
+// V reálných datech z IISSP má každý řádek vždy vyplněnou OSS (organizační složku státu).
+// OSS je vždy součástí kapitoly (chapter_org_units.chapter_id), kapitola je tedy vždy
+// odvoditelná přes join. Přímý chapter_id by byl redundantní a mohl způsobit nekonzistenci.
+
+Table budget_facts {
+  id                  bigint        [primary key]
+  fiscal_year         smallint      [not null, note: '2020–2025+']
+  fiscal_month        smallint      [not null, note: '1–12; pro roční agregát použij 12']
+  org_unit_id         integer       [not null, note: 'OSS vždy přítomná v reálných datech; kapitola se derivuje přes join na chapter_org_units']
+  paragraph_id        integer       [not null, note: 'pro příjmy bez funkčního třídění je nastaven na placeholder 0000']
+  item_id             integer       [not null]
+  funding_source_code char(1)       [note: 'ZC_ZDROJA (#5): "1" základní, "2"–"3" mimorozpočtové, "4" kryté nároky, "5" překročení. NULL ve souborech 2020–2023.']
+  nastroj_code        varchar(20)   [note: 'ZC_NASTRJ (#7): "0000" bez nástroje, "01xx" EU OP, "04xx" FM EHP/Norsko, "05xx" Švýcarsko, "0143"/"0186" NPO, "0170" SZP']
+  fund_code           varchar(20)   [note: 'ZC_FUND (#8): doplňkové třídění — účelově sledovaný celek (earmarked agenda)']
+  eds_code            varchar(20)   [note: 'ZC_EDS (#9): programové třídění — EDS/SMVS identifikátor programu']
+  ucris_code          varchar(20)   [note: 'ZC_UCRIS (#10): účelové třídění — účel transferu']
+  value_approved      decimal(14,2) [note: 'ZU_ROZSCH — schválený rozpočet (zákon o SR před začátkem roku)']
+  value_amended       decimal(14,2) [note: 'ZU_ROZPZM — rozpočet po změnách (novely + rozpočtová opatření)']
+  value_final         decimal(14,2) [note: 'ZU_KROZP — konečný rozpočet (po změnách + zapojení NNV); vždy NULL pro příjmy']
+  value_actual        decimal(14,2) [note: 'ZU_ROZKZ — skutečnost (reálné cash plnění)']
+  value_obligation    decimal(14,2) [note: 'ZU_OBLIG — podepsané závazky, dosud nezaplacené (forward-looking)']
+
+  indexes {
+    fiscal_year                  [name: 'idx_facts_fiscal_year']
+    (fiscal_year, fiscal_month)  [name: 'idx_facts_year_month']
+    org_unit_id                  [name: 'idx_facts_org_unit']
+    paragraph_id                 [name: 'idx_facts_paragraph']
+    item_id                      [name: 'idx_facts_item']
+    (fiscal_year, org_unit_id)   [name: 'idx_facts_year_org']
+    nastroj_code                 [name: 'idx_facts_nastroj']
+  }
+}
+
+// ─── APLIKAČNÍ VRSTVA (veřejná app) ───────────────────────────────────────────
+// Pojmenované agregační pohledy nad paragrafy. Názvy/popisy žijí v JSON slovnících
+// (klíč = slug), ne v DB. category_type je Postgres ENUM ('expense', 'income').
+
+Table categories {
+  id           integer       [primary key]
+  parent_id    integer       [note: 'NULL = kategorie, vyplněno = podkategorie']
+  slug         varchar(60)   [not null, unique, note: 'i18n klíč + URL segment']
+  type         category_type [not null, note: "'expense' | 'income'"]
+  is_mandatory boolean       [not null, default: false, note: 'true = zákonem povinný výdaj']
+}
+
+Table category_paragraph_map {
+  category_id  integer [not null]
+  paragraph_id integer [not null]
+
+  indexes {
+    (category_id, paragraph_id) [primary key]
+  }
+}
+
+// ─── REFERENCE ────────────────────────────────────────────────────────────────
+
+Ref org_units_chapter:         chapter_org_units.chapter_id        > chapters.id
+Ref subdivisions_division:     functional_subdivisions.division_id > functional_divisions.id
+Ref paragraphs_subdivision:    functional_paragraphs.subdivision_id > functional_subdivisions.id
+Ref groups_class:              economic_groups.class_id            > economic_classes.id
+Ref items_group:               economic_items.group_id             > economic_groups.id
+Ref facts_org_unit:            budget_facts.org_unit_id            > chapter_org_units.id
+Ref facts_paragraph:           budget_facts.paragraph_id           > functional_paragraphs.id
+Ref facts_item:                budget_facts.item_id                > economic_items.id
+Ref categories_parent:         categories.parent_id                > categories.id
+Ref map_category:              category_paragraph_map.category_id  > categories.id
+Ref map_paragraph:             category_paragraph_map.paragraph_id > functional_paragraphs.id
+
+// ─── UKÁZKOVÁ DATA ────────────────────────────────────────────────────────────
+
+Records chapters(id, code, slug) {
+  1, '313', 'mpsv'
+  2, '333', 'msmt'
+  3, '335', 'mzd'
+}
+
+Records functional_divisions(id, code, slug, name_cs) {
+  1, '31', 'division-31', 'Vzdělávání a školské služby — předškolní, základní, střední, vyšší odborné'
+  2, '35', 'division-35', 'Zdravotnictví'
+  3, '41', 'division-41', 'Dávky a podpory v sociálním zabezpečení'
+}
+
+Records functional_paragraphs(id, subdivision_id, code, slug, name_cs) {
+  1, 1, '3141', 'paragraph-3141',             'Vysoké školy'
+  2, 1, '3111', 'paragraph-3111',             'Předškolní výchova'
+  3, 9, '0000', 'paragraph-0000-placeholder', 'Nezařazeno — příjmy bez funkčního třídění'
+}
+
+Records economic_classes(id, code, slug, name_cs) {
+  1, '1', 'class-1', 'Daňové příjmy'
+  2, '5', 'class-5', 'Běžné výdaje'
+  3, '6', 'class-6', 'Kapitálové výdaje'
+}
+
+Records economic_items(id, group_id, code, slug, name_cs) {
+  1, 1, '5011', 'item-5011', 'Platy zaměstnanců'
+  2, 1, '5410', 'item-5410', 'Sociální dávky'
+}
+
+Records categories(id, parent_id, slug, type, is_mandatory) {
+  1, null, 'socialProtection', 'expense', true
+  2, 1,    'oldAgePensions',   'expense', true
+  3, null, 'education',        'expense', false
+  4, null, 'vat',              'income',  false
+}
+
+Records chapter_org_units(id, chapter_id, code, name_cs) {
+  1, 2, 'oss-cvut', 'ČVUT v Praze — rektorát'
+  2, 2, 'oss-muni', 'Masarykova univerzita — rektorát'
+  3, 1, 'oss-mpsv', 'MPSV — ústřední orgán'
+}
+
+// Příklad: jeden řádek = (OSS, paragraf, položka, rok, měsíc, MIS-RIS dimenze) tuple
+// se všemi 5 rozpočtovými stavy vedle sebe. NULL = MIS-RIS daný stav pro tuple nevyplnil
+// (typicky value_final pro příjmy, value_obligation pro položky bez závazků).
+Records budget_facts(id, fiscal_year, fiscal_month, org_unit_id, paragraph_id, item_id, funding_source_code, nastroj_code, fund_code, eds_code, ucris_code, value_approved, value_amended, value_final, value_actual, value_obligation) {
+  1, 2025, 12, 1, 1, 1, '1', '0000', null, null, null, 450000000.00,   450000000.00,   450000000.00,   448500000.00,   null  // ČVUT · Vysoké školy · Platy · plán 450 mil., čerpáno 448,5 mil.
+  2, 2025, 12, 2, 1, 1, '1', '0000', null, null, null, 380000000.00,   380000000.00,   380000000.00,   379200000.00,   null  // MUNI · Vysoké školy · Platy · plán 380 mil., čerpáno 379,2 mil.
+  3, 2025, 12, 3, 2, 2, '1', '0000', null, null, null, 12500000000.00, 12700000000.00, 12700000000.00, 12680000000.00, null  // MPSV · Starobní důchody · Soc. dávky · plán 12,5 mld., po změnách 12,7 mld., čerpáno 12,68 mld.
+}

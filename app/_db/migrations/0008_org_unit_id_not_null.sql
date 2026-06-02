@@ -1,0 +1,1 @@
+ALTER TABLE "budget_facts" ALTER COLUMN "org_unit_id" SET NOT NULL;
