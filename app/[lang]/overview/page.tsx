@@ -1,13 +1,13 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
 import { getBudgetYear, getBudgetYears } from '@/app/_services/budget.service'
-import dynamic from 'next/dynamic'
 import { RED_PALETTE } from '@/app/lib/palette'
 import { ChartCard } from '@/app/components/ChartCard'
-
-const AreaTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
-const BudgetPieChart = dynamic(() => import('@/app/components/BudgetPieChart').then((m) => ({ default: m.BudgetPieChart })))
+import { AreaTrendChart } from '@/app/components/AreaTrendChart'
+import { BudgetPieChart } from '@/app/components/BudgetPieChart'
 import { SummaryCard } from '@/app/components/SummaryCard'
 import { formatBillions, translateCategories } from '@/app/lib/format'
 

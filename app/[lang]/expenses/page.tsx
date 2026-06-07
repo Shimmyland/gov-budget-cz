@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
@@ -6,10 +8,8 @@ import { ChartCard } from '@/app/components/ChartCard'
 import { translateCategories, formatBillions } from '@/app/lib/format'
 import { buildColorMap, RED_PALETTE, EXPENSE_COLOR_DARK, EXPENSE_COLOR_LIGHT } from '@/app/lib/palette'
 import { BADGE_CLASSES } from '@/app/lib/constants'
-import dynamic from 'next/dynamic'
-
-const SubcategoryBarChart = dynamic(() => import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })))
-const CategoryTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
+import { BarChart as SubcategoryBarChart } from '@/app/components/BarChart'
+import { AreaTrendChart as CategoryTrendChart } from '@/app/components/AreaTrendChart'
 import { CategoryList } from '@/app/components/CategoryList'
 
 export default async function ExpensesPage({ params, searchParams }: PageProps<'/[lang]/expenses'>) {

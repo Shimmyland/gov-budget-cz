@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from './dictionaries'
 import { getBudgetYear } from '@/app/_services/budget.service'

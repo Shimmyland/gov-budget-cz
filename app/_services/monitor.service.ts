@@ -19,9 +19,6 @@ import { MonitorClientError } from '@/app/lib/errors'
 import type { MonitorPackage } from '@/app/lib/types'
 
 const MONITOR_BASE_URL = 'https://monitor.statnipokladna.gov.cz/data/extrakty/csv/FinOSS'
-// Project-local cache directory. Resolved against process.cwd() so it lives
-// inside the repo (under .cache/etl) instead of system /tmp. Gitignored.
-const DEFAULT_CACHE_DIR = join(process.cwd(), '.cache', 'etl')
 
 type ExtractedPackage = {
   misRisCsv: Buffer
@@ -35,7 +32,8 @@ type DownloadOptions = {
 }
 
 async function downloadPackage(pkg: MonitorPackage, opts: DownloadOptions = {}): Promise<Buffer> {
-  const cacheDir = opts.cacheDir ?? DEFAULT_CACHE_DIR
+  // Resolved lazily (not at module level) to avoid Turbopack NFT tracing the whole project.
+  const cacheDir = opts.cacheDir ?? join(process.cwd(), '.cache', 'etl')
   if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true })
 
   const id = `${pkg.year}_${String(pkg.month).padStart(2, '0')}`

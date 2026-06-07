@@ -1,12 +1,12 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
 import { getBudgetYear, getBudgetYears } from '@/app/_services/budget.service'
 import { ChartCard } from '@/app/components/ChartCard'
-import dynamic from 'next/dynamic'
-
-const SubcategoryBarChart = dynamic(() => import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })))
-const CategoryTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
+import { BarChart as SubcategoryBarChart } from '@/app/components/BarChart'
+import { AreaTrendChart as CategoryTrendChart } from '@/app/components/AreaTrendChart'
 import { CategoryList } from '@/app/components/CategoryList'
 import { translateCategories, formatBillions } from '@/app/lib/format'
 import { buildColorMap, GREEN_PALETTE, INCOME_COLOR_DARK, INCOME_COLOR_LIGHT } from '@/app/lib/palette'
