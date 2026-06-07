@@ -29,7 +29,8 @@ export function ChartTooltip({
             {formatBillions(entry.value, locale)} {unit}
             {entry.percent != null && (
               <span className="text-muted-foreground font-normal">
-                {' | '}{(entry.percent * 100).toFixed(1).replace('.', ',')} %
+                {' | '}
+                {(entry.percent * 100).toFixed(1).replace('.', ',')} %
               </span>
             )}
           </span>

@@ -19,8 +19,9 @@
 
 import { Readable } from 'node:stream'
 import { createInterface } from 'node:readline'
+import { MisRisHeaderError } from '@/app/lib/errors'
 
-export interface MisRisRow {
+type MisRisRow = {
   fiscalYear: number
   fiscalMonth: number
   chapterCode: string
@@ -50,39 +51,12 @@ export interface MisRisRow {
   valueObligation: number
 }
 
-const REQUIRED_COLUMNS = [
-  '0FISCPER',
-  'ZC_UCJED',
-  'ZC_ICO',
-  '0FM_AREA',
-  'ZCMMT_ITM',
-  '0FUNC_AREA',
-  'ZU_ROZSCH',
-  'ZU_ROZKZ',
-] as const
-
-const OPTIONAL_COLUMNS = [
-  'ZC_ZDROJA',
-  'ZC_NASTRJ',
-  'ZC_FUND',
-  'ZC_EDS',
-  'ZC_UCRIS',
-  'ZU_ROZPZM',
-  'ZU_KROZP',
-  'ZU_OBLIG',
-] as const
+const REQUIRED_COLUMNS = ['0FISCPER', 'ZC_UCJED', 'ZC_ICO', '0FM_AREA', 'ZCMMT_ITM', '0FUNC_AREA', 'ZU_ROZSCH', 'ZU_ROZKZ'] as const
+const OPTIONAL_COLUMNS = ['ZC_ZDROJA', 'ZC_NASTRJ', 'ZC_FUND', 'ZC_EDS', 'ZC_UCRIS', 'ZU_ROZPZM', 'ZU_KROZP', 'ZU_OBLIG'] as const
 
 type RequiredColumnCode = (typeof REQUIRED_COLUMNS)[number]
 type OptionalColumnCode = (typeof OPTIONAL_COLUMNS)[number]
-type ColumnIndex = Record<RequiredColumnCode, number> &
-  Partial<Record<OptionalColumnCode, number>>
-
-export class MisRisHeaderError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'MisRisHeaderError'
-  }
-}
+type ColumnIndex = Record<RequiredColumnCode, number> & Partial<Record<OptionalColumnCode, number>>
 
 function parseHeader(line: string): ColumnIndex {
   const cells = line.split(';')
@@ -157,16 +131,13 @@ function parseItemCode(raw: string | undefined): string | null {
   return raw
 }
 
-export interface ParseOptions {
+export type ParseOptions = {
   /** Skip rows where ALL five budget value states are zero. Default: true. */
   skipZeroValues?: boolean
 }
 
 /** Stream MIS-RIS CSV rows as typed objects. */
-export async function* parseMisRis(
-  csv: Buffer,
-  opts: ParseOptions = {},
-): AsyncGenerator<MisRisRow> {
+export async function* parseMisRis(csv: Buffer, opts: ParseOptions = {}): AsyncGenerator<MisRisRow> {
   const skipZeroValues = opts.skipZeroValues ?? true
   const rl = createInterface({ input: Readable.from(csv), crlfDelay: Infinity })
 
@@ -193,29 +164,24 @@ export async function* parseMisRis(
     const itemCode = parseItemCode(cols[col.ZCMMT_ITM])
     if (!itemCode) continue
 
+    const opt = <T>(c: OptionalColumnCode, fn: (raw: string | undefined) => T, fallback: T): T =>
+      col![c] !== undefined ? fn(cols[col![c]!]) : fallback
+
     const valueApproved = parseDecimal(cols[col.ZU_ROZSCH])
     const valueActual = parseDecimal(cols[col.ZU_ROZKZ])
-    const valueAmended = col.ZU_ROZPZM !== undefined ? parseDecimal(cols[col.ZU_ROZPZM]) : 0
-    const valueFinal = col.ZU_KROZP !== undefined ? parseDecimal(cols[col.ZU_KROZP]) : 0
-    const valueObligation = col.ZU_OBLIG !== undefined ? parseDecimal(cols[col.ZU_OBLIG]) : 0
+    const valueAmended = opt('ZU_ROZPZM', parseDecimal, 0)
+    const valueFinal = opt('ZU_KROZP', parseDecimal, 0)
+    const valueObligation = opt('ZU_OBLIG', parseDecimal, 0)
 
-    if (
-      skipZeroValues &&
-      valueApproved === 0 &&
-      valueAmended === 0 &&
-      valueFinal === 0 &&
-      valueActual === 0 &&
-      valueObligation === 0
-    ) {
+    if (skipZeroValues && valueApproved === 0 && valueAmended === 0 && valueFinal === 0 && valueActual === 0 && valueObligation === 0) {
       continue
     }
 
-    const fundingSourceCode =
-      col.ZC_ZDROJA !== undefined ? parseFundingSource(cols[col.ZC_ZDROJA]) : null
-    const nastrojCode = col.ZC_NASTRJ !== undefined ? parseCode(cols[col.ZC_NASTRJ]) : null
-    const fundCode = col.ZC_FUND !== undefined ? parseCode(cols[col.ZC_FUND]) : null
-    const edsCode = col.ZC_EDS !== undefined ? parseCode(cols[col.ZC_EDS]) : null
-    const ucrisCode = col.ZC_UCRIS !== undefined ? parseCode(cols[col.ZC_UCRIS]) : null
+    const fundingSourceCode = opt('ZC_ZDROJA', parseFundingSource, null)
+    const nastrojCode = opt('ZC_NASTRJ', parseCode, null)
+    const fundCode = opt('ZC_FUND', parseCode, null)
+    const edsCode = opt('ZC_EDS', parseCode, null)
+    const ucrisCode = opt('ZC_UCRIS', parseCode, null)
 
     yield {
       fiscalYear: period.year,

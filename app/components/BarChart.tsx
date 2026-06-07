@@ -2,11 +2,11 @@
 
 import { CHART_HEIGHT } from '@/app/lib/constants'
 
-import { useContainerWidth } from '@/app/lib/hooks/useContainerWidth'
+import { useContainerWidth } from '@/app/lib/hooks/use-container-width'
 import { memo } from 'react'
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts'
 import { ChartTooltip } from '@/app/components/ChartTooltip'
-import type { PieSlice } from '@/lib/types'
+import type { PieSlice } from '@/app/lib/types'
 import { formatBillions } from '@/app/lib/format'
 
 interface BarChartProps {
@@ -56,9 +56,7 @@ function XAxisTick({ x, y, payload, needsRotation }: { x?: number; y?: number; p
   }
   const words = (payload?.value ?? '').split(' ')
   const mid = Math.ceil(words.length / 2)
-  const lines = words.length > 2
-    ? [words.slice(0, mid).join(' '), words.slice(mid).join(' ')]
-    : words
+  const lines = words.length > 2 ? [words.slice(0, mid).join(' '), words.slice(mid).join(' ')] : words
   return (
     <text x={x} y={y} textAnchor="middle" fill="var(--muted-foreground)" fontSize={11}>
       {lines.map((line, i) => (
@@ -95,13 +93,7 @@ export const BarChart = memo(function BarChart({ data, unit, locale }: BarChartP
           data={chartData}
           margin={{ top: 36, right: 8, bottom: needsRotation ? 100 : 52, left: 0 }}
         >
-          <XAxis
-            dataKey="name"
-            tick={<XAxisTick needsRotation={needsRotation} />}
-            axisLine={false}
-            tickLine={false}
-            interval={0}
-          />
+          <XAxis dataKey="name" tick={<XAxisTick needsRotation={needsRotation} />} axisLine={false} tickLine={false} interval={0} />
           <YAxis
             domain={[0, maxValue * 1.05]}
             tickFormatter={tickFormatter}

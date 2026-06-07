@@ -4,6 +4,7 @@
 
 Aplikace gov-budget-cz zobrazuje data státního rozpočtu ČR a má ambici napojit se na reálná data
 z Monitor Státní Pokladny. Cílem je vybrat kategorizaci výdajů/příjmů, která bude:
+
 1. Věcně správná (odpovídá reálné struktuře českého státního rozpočtu)
 2. Srozumitelná laické veřejnosti
 3. Technicky implementovatelná z dostupných datových zdrojů
@@ -14,17 +15,18 @@ z Monitor Státní Pokladny. Cílem je vybrat kategorizaci výdajů/příjmů, k
 
 Český státní rozpočet má 3 dimenze třídění:
 
-| Dimenze | Co popisuje | Vhodné pro laiky? |
-|---|---|---|
-| **Kapitolové (odpovědnostní) třídění** (47 kapitol v SR 2025) | KDO peníze spravuje (ministerstvo/úřad) | ❌ Ne – primárně |
-| **Druhové třídění** (třída/seskupení/položka) | CO se za ně kupuje a jaká je ekonomická povaha (platy, investice, dávky, transfery...) | ❌ Ne – primárně |
-| **Odvětvové (funkční) třídění** (skupina/oddíl/pododdíl/paragraf) | NA CO se peníze využívají (vzdělání, obrana...) | ✅ Ano |
+| Dimenze                                                           | Co popisuje                                                                            | Vhodné pro laiky? |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------- |
+| **Kapitolové (odpovědnostní) třídění** (47 kapitol v SR 2025)     | KDO peníze spravuje (ministerstvo/úřad)                                                | ❌ Ne – primárně  |
+| **Druhové třídění** (třída/seskupení/položka)                     | CO se za ně kupuje a jaká je ekonomická povaha (platy, investice, dávky, transfery...) | ❌ Ne – primárně  |
+| **Odvětvové (funkční) třídění** (skupina/oddíl/pododdíl/paragraf) | NA CO se peníze využívají (vzdělání, obrana...)                                        | ✅ Ano            |
 
 > Rozpočtová skladba má dle vyhlášky **412/2021 Sb.** ve skutečnosti **12 dimenzí
 > třídění** — výše uvedené tři jsou hlavní, ostatní jsou technické (konsolidační,
-> programové, účelové, …). Viz sekce *Rozpočtová skladba — kompletní přehled*.
+> programové, účelové, …). Viz sekce _Rozpočtová skladba — kompletní přehled_.
 
 **Proč kapitoly nestačí jako hlavní pohled:**
+
 - Kapitola 313 (MPSV) = sociální věci a zaměstnanost a sociální péče – laik nerozlišuje
 - Kapitola "Všeobecná pokladní správa" – veřejnost neví co to je
 - Jedna agenda (výzkum) je roztažená přes více kapitol
@@ -42,12 +44,12 @@ Z 12 dimenzí třídění dle vyhlášky 412/2021 Sb. ukládá aplikace **tři j
 všechny jsou v DB **1:1 s vyhláškou**. K nim přidává **jednu vlastní vrstvu** (UI
 kategorizace), která existuje jen v aplikaci a slouží srozumitelné prezentaci veřejnosti.
 
-| Dimenze | Zdroj pravdy | Tabulky v DB | Vztah k vyhlášce | K čemu slouží |
-|---|---|---|---|---|
-| **Kapitolové třídění** | zákon č. 434/2024 Sb. | `chapters`, `chapter_org_units` | 1:1 s vyhláškou | Sekundární pohled „Ministerstva" — kdo peníze spravuje |
-| **Druhové třídění** | vyhláška č. 412/2021 Sb. | `economic_classes`, `economic_groups`, `economic_items` | 1:1 s vyhláškou | Pomocný pohled — ekonomická povaha (platy vs. investice) |
-| **Odvětvové třídění** | vyhláška č. 412/2021 Sb., příloha č. 3 | `functional_divisions`, `functional_subdivisions`, `functional_paragraphs` | 1:1 s vyhláškou | Datový základ pro UI kategorie |
-| **UI kategorie** | vlastní specifikace tohoto dokumentu | `categories`, `category_paragraph_map` | aplikační vrstva nad odvětvovým tříděním | Primární pohled veřejnosti — laicky srozumitelná škatulka |
+| Dimenze                | Zdroj pravdy                           | Tabulky v DB                                                               | Vztah k vyhlášce                         | K čemu slouží                                             |
+| ---------------------- | -------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| **Kapitolové třídění** | zákon č. 434/2024 Sb.                  | `chapters`, `chapter_org_units`                                            | 1:1 s vyhláškou                          | Sekundární pohled „Ministerstva" — kdo peníze spravuje    |
+| **Druhové třídění**    | vyhláška č. 412/2021 Sb.               | `economic_classes`, `economic_groups`, `economic_items`                    | 1:1 s vyhláškou                          | Pomocný pohled — ekonomická povaha (platy vs. investice)  |
+| **Odvětvové třídění**  | vyhláška č. 412/2021 Sb., příloha č. 3 | `functional_divisions`, `functional_subdivisions`, `functional_paragraphs` | 1:1 s vyhláškou                          | Datový základ pro UI kategorie                            |
+| **UI kategorie**       | vlastní specifikace tohoto dokumentu   | `categories`, `category_paragraph_map`                                     | aplikační vrstva nad odvětvovým tříděním | Primární pohled veřejnosti — laicky srozumitelná škatulka |
 
 ### Co tento model umožňuje
 
@@ -64,7 +66,7 @@ kategorizace), která existuje jen v aplikaci a slouží srozumitelné prezentac
 ### Vztah mezi odvětvovým tříděním a UI kategoriemi
 
 UI kategorie se vědomě **odchylují od skupin vyhlášky** v některých případech (viz sekce
-*Doporučené kategorie pro aplikaci* níže). Odchylka se ale nikdy nedotýká vyhláškové
+_Doporučené kategorie pro aplikaci_ níže). Odchylka se ale nikdy nedotýká vyhláškové
 hierarchie (paragraf → pododdíl → oddíl → skupina) — pohybuje se výhradně v rovině
 „který paragraf dostane kterou UI nálepku". Vyhláška je v DB nedotčená, odchylky jsou
 v tabulce `category_paragraph_map`.
@@ -77,23 +79,23 @@ Rozpočtová skladba je závazný systém třídění příjmů, výdajů a fina
 veřejných rozpočtů. Účinná od 1. 1. 2022 (nahradila vyhlášku 323/2002 Sb.), průběžně
 novelizovaná — pro rok 2025 platí znění s pokynem MF z 1. 1. 2024.
 
-Vyhláška definuje **12 dimenzí třídění**. Každý záznam v Monitor datech má *současně*
+Vyhláška definuje **12 dimenzí třídění**. Každý záznam v Monitor datech má _současně_
 všechny dimenze, lze tedy z jednoho datasetu vytvořit více pohledů.
 
-| # | Třídění | Co popisuje | Relevance pro aplikaci |
-|---|---|---|---|
-| 1 | **Odpovědnostní** (kapitolové) | KDO peníze spravuje | ✅ Sekundární pohled |
-| 2 | **Druhové** | Jaká je ekonomická povaha (plat, investice, transfer…) | ⚠️ Pomocné — viz níže |
-| 3 | **Odvětvové** (funkční) | NA CO peníze jdou | ✅ Primární pohled |
-| 4 | Konsolidační | Mezi kterými rozpočty peníze tečou | ❌ Technické |
-| 5 | Podkladové | Typ rozpočtového opatření | ❌ Technické |
-| 6 | Prostorové | Tuzemsko/zahraničí jako zdroj | ❌ Technické |
-| 7 | Nástrojové | EU fondy, mezinárodní smlouvy | ⚠️ Možná pro EU transfery |
-| 8 | Doplňkové | Zvlášť sledované celky | ❌ Technické |
-| 9 | Programové | Programy a akce (EDS/SMVS) | ⚠️ Možná pro investiční drill-down |
-| 10 | Účelové | Účel transferů (mzdy, ICT…) | ❌ Technické |
-| 11 | Strukturní | Věcná podstata operací | ❌ Technické |
-| 12 | Transferové | Účel transferů příjemcům | ❌ Technické |
+| #   | Třídění                        | Co popisuje                                            | Relevance pro aplikaci             |
+| --- | ------------------------------ | ------------------------------------------------------ | ---------------------------------- |
+| 1   | **Odpovědnostní** (kapitolové) | KDO peníze spravuje                                    | ✅ Sekundární pohled               |
+| 2   | **Druhové**                    | Jaká je ekonomická povaha (plat, investice, transfer…) | ⚠️ Pomocné — viz níže              |
+| 3   | **Odvětvové** (funkční)        | NA CO peníze jdou                                      | ✅ Primární pohled                 |
+| 4   | Konsolidační                   | Mezi kterými rozpočty peníze tečou                     | ❌ Technické                       |
+| 5   | Podkladové                     | Typ rozpočtového opatření                              | ❌ Technické                       |
+| 6   | Prostorové                     | Tuzemsko/zahraničí jako zdroj                          | ❌ Technické                       |
+| 7   | Nástrojové                     | EU fondy, mezinárodní smlouvy                          | ⚠️ Možná pro EU transfery          |
+| 8   | Doplňkové                      | Zvlášť sledované celky                                 | ❌ Technické                       |
+| 9   | Programové                     | Programy a akce (EDS/SMVS)                             | ⚠️ Možná pro investiční drill-down |
+| 10  | Účelové                        | Účel transferů (mzdy, ICT…)                            | ❌ Technické                       |
+| 11  | Strukturní                     | Věcná podstata operací                                 | ❌ Technické                       |
+| 12  | Transferové                    | Účel transferů příjemcům                               | ❌ Technické                       |
 
 > **Číselník:** Závazný číselník rozpočtové skladby je publikován MF ČR v IISSP
 > (informační systém státní pokladny). Před implementací mapování vždy ověřit
@@ -107,33 +109,37 @@ Hierarchie: **třída** (1 číslice) → **seskupení položek** (2 číslice)
 
 Třída 7 v systému neexistuje (rezervováno do budoucna).
 
-| Třída | Název | Typ operace | Příklady položek |
-|---|---|---|---|
-| **1** | Daňové příjmy | Příjmy | DPH (1211), DPFO (1111–1113), DPPO (1121–1123), spotřební daně (1221–1229), energetické daně (1231–1234), pojistné na sociální zabezpečení (1611–1618) |
-| **2** | Nedaňové příjmy | Příjmy | Vlastní činnost (2111), sankční platby (2211, 2212), prodej krátkodobého majetku (2310), splátky půjček (2411–2414) |
-| **3** | Kapitálové příjmy | Příjmy | Prodej dlouhodobého majetku (3111–3113), prodej akcií a podílů (3201) |
-| **4** | Přijaté transfery | Příjmy | Neinvestiční (4111–4116) i investiční (4211–4216) transfery — typicky z EU rozpočtu, mezi rozpočty |
-| **5** | Běžné výdaje | Výdaje | Platy (5011), povinné pojistné (5031–5032), nákup materiálu (5139), energie (5154), sociální dávky (5410), neinvestiční dotace (5311–5343) |
-| **6** | Kapitálové výdaje | Výdaje | Stavební investice (6121), stroje a zařízení (6122), nákup akcií/podílů (6201), investiční transfery (6311–6359) |
-| **8** | Financování | Financování | Emise/splátky státních dluhopisů (8111–8128), změna stavu na účtech (8115), půjčky od/k subjektům |
+| Třída | Název             | Typ operace | Příklady položek                                                                                                                                       |
+| ----- | ----------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1** | Daňové příjmy     | Příjmy      | DPH (1211), DPFO (1111–1113), DPPO (1121–1123), spotřební daně (1221–1229), energetické daně (1231–1234), pojistné na sociální zabezpečení (1611–1618) |
+| **2** | Nedaňové příjmy   | Příjmy      | Vlastní činnost (2111), sankční platby (2211, 2212), prodej krátkodobého majetku (2310), splátky půjček (2411–2414)                                    |
+| **3** | Kapitálové příjmy | Příjmy      | Prodej dlouhodobého majetku (3111–3113), prodej akcií a podílů (3201)                                                                                  |
+| **4** | Přijaté transfery | Příjmy      | Neinvestiční (4111–4116) i investiční (4211–4216) transfery — typicky z EU rozpočtu, mezi rozpočty                                                     |
+| **5** | Běžné výdaje      | Výdaje      | Platy (5011), povinné pojistné (5031–5032), nákup materiálu (5139), energie (5154), sociální dávky (5410), neinvestiční dotace (5311–5343)             |
+| **6** | Kapitálové výdaje | Výdaje      | Stavební investice (6121), stroje a zařízení (6122), nákup akcií/podílů (6201), investiční transfery (6311–6359)                                       |
+| **8** | Financování       | Financování | Emise/splátky státních dluhopisů (8111–8128), změna stavu na účtech (8115), půjčky od/k subjektům                                                      |
 
 **Proč druhové třídění v aplikaci aktivně nepoužívat jako hlavní pohled:**
+
 - Odpovídá na „jaká je ekonomická povaha výdaje" — laika typicky nezajímá tolik
   jako „na co peníze jdou".
 - Hodí se ale jako **agregace v rámci kategorie** — např. u Vzdělávání ukázat,
   kolik z toho jsou platy učitelů (tř. 5) vs. investice do budov (tř. 6).
   Informačně silné, technicky levné (Monitor data tuto dimenzi obsahují).
-- Třída 8 (financování) je samostatný okruh — *nepatří* do příjmů ani výdajů,
+- Třída 8 (financování) je samostatný okruh — _nepatří_ do příjmů ani výdajů,
   ale do bilance schodku/přebytku.
 
 ### Vztah dimenzí v datech Monitor SP
 
 Každý záznam má současně kapitolu, paragraf (funkční), položku (druhové):
+
 ```
 kapitola=333 (MŠMT) a paragraf=3113 (ZŠ) a položka=5011 (platy)
 → výdaj 50 mld. Kč
 ```
+
 Z jednoho datasetu lze tedy postavit:
+
 - **funkční pohled** — agregace přes paragraf
 - **kapitolový pohled** — agregace přes kapitolu
 - **ekonomický pohled** (volitelný) — agregace přes položku/třídu
@@ -145,6 +151,7 @@ Z jednoho datasetu lze tedy postavit:
 **Datový zdroj:** https://monitor.statnipokladna.gov.cz (open data API a CSV/JSON soubory)
 
 **Co je dostupné:**
+
 - Data státního rozpočtu po letech (i měsících)
 - Dimenze: paragraf (funkční třídění), položka (druhové třídění), kapitola
 - Sloupce: budget_adopted, budget_amended, budget_spending
@@ -159,9 +166,10 @@ Z jednoho datasetu lze tedy postavit:
 >
 > **DB stav:** úplný strom je seedován v migracích `0002_seed_static_dimensions.sql`
 > (počáteční výběr odpovídající textu níže) a `0003_extend_functional_tree_from_vyhlaska.sql`
-> + `0004_complete_category_paragraph_map.sql` (doplnění do plné vyhláškové úrovně).
-> Tabulky `functional_*` jsou tedy 1:1 s vyhláškou; tento dokument zůstává čtenou
-> referencí, ne zdrojem pravdy.
+>
+> - `0004_complete_category_paragraph_map.sql` (doplnění do plné vyhláškové úrovně).
+>   Tabulky `functional_*` jsou tedy 1:1 s vyhláškou; tento dokument zůstává čtenou
+>   referencí, ne zdrojem pravdy.
 
 ```
 Skupina (1 číslice) → Oddíl (2 číslice) → Pododdíl (3 číslice) → Paragraf (4 číslice)
@@ -460,12 +468,14 @@ Kategorie aplikace **se v některých případech vědomě odchylují od skupin 
 veřejnost (viz Kontext, řádky 5–9).
 
 **Co dodržujeme striktně dle vyhlášky:**
-- Názvy a kódy oddílů, pododdílů a paragrafů (viz strom výše, sekce *Jak funguje
-  funkční třídění*)
+
+- Názvy a kódy oddílů, pododdílů a paragrafů (viz strom výše, sekce _Jak funguje
+  funkční třídění_)
 - Datový model (každý paragraf má jednoznačný oddíl)
 - Mapování `paragraf → oddíl` přejímá vyhlášku 1:1
 
 **Kde se UI kategorie odchylují od skupin vyhlášky:**
+
 - **Oddíl 54 (Právní ochrana — soudy, státní zastupitelství, vězeňství, ombudsman)**
   je ve vyhlášce ve skupině 5 („Bezpečnost a právní ochrana"). V UI ho řadíme do
   `publicAdministration`, protože laik mentálně řadí justici ke „státní správě",
@@ -473,8 +483,8 @@ veřejnost (viz Kontext, řádky 5–9).
 - **Oddíly 33 (Kultura, církve, sdělovací prostředky) a 34 (Sport a zájmová činnost)**
   jsou ve vyhlášce oddělené. V UI je spojujeme do `cultureAndSport`, protože každý
   samostatně má malý objem (~1 % SR) a v běžné komunikaci je veřejnost vnímá společně.
-- Důvod obou: vyhláška reflektuje *byrokratickou* organizaci (kdo to spravuje, kdo
-  dělá legislativu), ne *mentální model* občana sledujícího kam jdou jeho daně.
+- Důvod obou: vyhláška reflektuje _byrokratickou_ organizaci (kdo to spravuje, kdo
+  dělá legislativu), ne _mentální model_ občana sledujícího kam jdou jeho daně.
 
 **Implementace:** Mapování `paragraf → CategoryKey` je uloženo v DB tabulce
 `category_paragraph_map`. Vyhláškové dimenze (`functional_divisions`,
@@ -486,19 +496,19 @@ vyhlášky je při změně preferencí triviální.
 
 ### Výdaje – 11 kategorií (funkční třídění → veřejné skupiny)
 
-| Kategorie (key) | Název pro veřejnost | Podkategorie | Pokrývá oddíly | ~% 2025 | Hlavní kapitoly |
-|---|---|---|---|---|---|
-| `socialProtection` | Sociální péče | Starobní a invalidní důchody, Nemocenská a mateřská, Rodičovský příspěvek, Podpora nezaměstnaných, Sociální služby | 41, 42, 43 (celá sk. 4) | 35 % | MPSV (313) |
-| `healthcare` | Zdravotnictví* | Přísp. pojišťovnám za st. pojištěnce, Ambulantní péče, Nemocniční péče, Veřejné zdraví | **35** | 6 % | MZd (335) |
-| `education` | Vzdělávání | MŠ a ZŠ, Střední školy, Vysoké školy, Věda a výzkum | **31, 32** | 11 % | MŠMT (333), AV ČR (361) |
-| `defenseAndSecurity` | Obrana a bezpečnost | Armáda, Policie, Hasiči a IZS, Krizové řízení, Zpravodajské služby | 51, 52, 53, 55 (sk. 5 bez 54) | 8 % | MO (307), MV (314) |
-| `transport` | Doprava a infrastruktura | Silnice a dálnice, Železnice, Vodohospodářství | 22, 23 | 9 % | MD (327), SFDI |
-| `debtService` | Obsluha státního dluhu | Úroky ze dluhopisů, Splátky půjček | 63 (paragraf 6310) | 4 % | Státní dluh (396) |
-| `publicAdministration` | Státní správa a justice | Ministerstva, Parlament a prezident, Soudy, Vězeňství, Ombudsman | 61, 62, **54** (Právní ochrana) | ~5 % | MF (312), MSp (336), PSP (302) |
-| `municipalTransfers` | Podpora obcí a krajů | Sdílené daně, Dotace obcím a krajům | napříč funkcemi (dle účelu transferu) | ~6–7 % | **kap. 398 (VPS)** |
-| `environmentAndAgriculture` | Zemědělství a životní prostředí | Zemědělství a lesy, Ochrana přírody a ovzduší, Vodní hospodářství | sk. 1 (oddíl 10), 37 | 4 % | MZe (329), MŽP (315) |
-| `cultureAndSport` | Kultura a sport | Kulturní dědictví, Muzea a divadla, Sport a tělovýchova | **33, 34** | 2 % | MK (334), NSA (362) |
-| `industryAndEconomy` | Hospodářství a energetika | Energetika a OZE, Dotace podnikatelům, Podpora exportu, Spoje | 21, 24, 25 | 3–4 % | MPO (322) |
+| Kategorie (key)             | Název pro veřejnost             | Podkategorie                                                                                                       | Pokrývá oddíly                        | ~% 2025 | Hlavní kapitoly                |
+| --------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------- | ------------------------------ |
+| `socialProtection`          | Sociální péče                   | Starobní a invalidní důchody, Nemocenská a mateřská, Rodičovský příspěvek, Podpora nezaměstnaných, Sociální služby | 41, 42, 43 (celá sk. 4)               | 35 %    | MPSV (313)                     |
+| `healthcare`                | Zdravotnictví\*                 | Přísp. pojišťovnám za st. pojištěnce, Ambulantní péče, Nemocniční péče, Veřejné zdraví                             | **35**                                | 6 %     | MZd (335)                      |
+| `education`                 | Vzdělávání                      | MŠ a ZŠ, Střední školy, Vysoké školy, Věda a výzkum                                                                | **31, 32**                            | 11 %    | MŠMT (333), AV ČR (361)        |
+| `defenseAndSecurity`        | Obrana a bezpečnost             | Armáda, Policie, Hasiči a IZS, Krizové řízení, Zpravodajské služby                                                 | 51, 52, 53, 55 (sk. 5 bez 54)         | 8 %     | MO (307), MV (314)             |
+| `transport`                 | Doprava a infrastruktura        | Silnice a dálnice, Železnice, Vodohospodářství                                                                     | 22, 23                                | 9 %     | MD (327), SFDI                 |
+| `debtService`               | Obsluha státního dluhu          | Úroky ze dluhopisů, Splátky půjček                                                                                 | 63 (paragraf 6310)                    | 4 %     | Státní dluh (396)              |
+| `publicAdministration`      | Státní správa a justice         | Ministerstva, Parlament a prezident, Soudy, Vězeňství, Ombudsman                                                   | 61, 62, **54** (Právní ochrana)       | ~5 %    | MF (312), MSp (336), PSP (302) |
+| `municipalTransfers`        | Podpora obcí a krajů            | Sdílené daně, Dotace obcím a krajům                                                                                | napříč funkcemi (dle účelu transferu) | ~6–7 %  | **kap. 398 (VPS)**             |
+| `environmentAndAgriculture` | Zemědělství a životní prostředí | Zemědělství a lesy, Ochrana přírody a ovzduší, Vodní hospodářství                                                  | sk. 1 (oddíl 10), 37                  | 4 %     | MZe (329), MŽP (315)           |
+| `cultureAndSport`           | Kultura a sport                 | Kulturní dědictví, Muzea a divadla, Sport a tělovýchova                                                            | **33, 34**                            | 2 %     | MK (334), NSA (362)            |
+| `industryAndEconomy`        | Hospodářství a energetika       | Energetika a OZE, Dotace podnikatelům, Podpora exportu, Spoje                                                      | 21, 24, 25                            | 3–4 %   | MPO (322)                      |
 
 > **Pozn. k drobným oddílům:** Oddíl 36 (Bydlení, komunální služby, územní rozvoj),
 > 38 (Ostatní výzkum a vývoj), 39 (Ostatní činnosti služeb pro FO) a 64 (Ostatní
@@ -508,12 +518,13 @@ vyhlášky je při změně preferencí triviální.
 > služby, 361x → `publicAdministration` pro bytovou politiku státu), nebo vytvořit
 > samostatný fallback „Ostatní".
 
-> *Zdravotnictví: Zdravotní pojišťovny (VZP atd.) jsou MIMO státní rozpočet.
+> \*Zdravotnictví: Zdravotní pojišťovny (VZP atd.) jsou MIMO státní rozpočet.
 > Státní rozpočet hradí jen příspěvky za „státní pojištěnce" (~140 mld. Kč).
 > Celkové výdaje na zdravotnictví v ČR jsou ~700 mld. Kč přes systém zdravotního pojištění.
 > → V UI zobrazit prominentní kontextový banner nebo tooltip s tímto vysvětlením.
 
 > **Vizualizace:**
+>
 > - **Stránka Overview:** Pie chart zobrazí pouze top 6 kategorií podle objemu; zbývající 5
 >   se seskupí pod "Ostatní". Kliknutím na "Ostatní" nebo na odkaz pod grafem přejde uživatel
 >   na stránku Výdaje, kde jsou všechny kategorie.
@@ -524,14 +535,14 @@ vyhlášky je při změně preferencí triviální.
 
 ### Příjmy – 6 kategorií
 
-| Kategorie (key) | Název | Podkategorie | ~hodnota 2025 |
-|---|---|---|---|
-| `vat` | DPH | Základní sazba 21 %, Snížené sazby 12 %, DPH z dovozu | ~520 mld. |
-| `incomeTax` | Daně z příjmů | DPFO zaměstnanci, DPFO OSVČ, DPPO | ~390 mld. |
-| `socialInsurance` | Pojistné soc. zabezpečení | Důchodové poj., Nemocenské poj., Přísp. politika zam. | ~810 mld. |
-| `exciseDuties` | Spotřební a energetické daně | Pohonné hmoty, Tabák, Alkohol, Energetické daně | ~200 mld. |
-| `euTransfers` | Transfery EU | Příjmy z fondů EU, Odvody do EU (záporné) | variabilní |
-| `otherRevenue` | Ostatní příjmy | Dividendy st. firem (ČEZ...), Správní poplatky, Prodej majetku | ~150 mld. |
+| Kategorie (key)   | Název                        | Podkategorie                                                   | ~hodnota 2025 |
+| ----------------- | ---------------------------- | -------------------------------------------------------------- | ------------- |
+| `vat`             | DPH                          | Základní sazba 21 %, Snížené sazby 12 %, DPH z dovozu          | ~520 mld.     |
+| `incomeTax`       | Daně z příjmů                | DPFO zaměstnanci, DPFO OSVČ, DPPO                              | ~390 mld.     |
+| `socialInsurance` | Pojistné soc. zabezpečení    | Důchodové poj., Nemocenské poj., Přísp. politika zam.          | ~810 mld.     |
+| `exciseDuties`    | Spotřební a energetické daně | Pohonné hmoty, Tabák, Alkohol, Energetické daně                | ~200 mld.     |
+| `euTransfers`     | Transfery EU                 | Příjmy z fondů EU, Odvody do EU (záporné)                      | variabilní    |
+| `otherRevenue`    | Ostatní příjmy               | Dividendy st. firem (ČEZ...), Správní poplatky, Prodej majetku | ~150 mld.     |
 
 ---
 
@@ -540,20 +551,26 @@ vyhlášky je při změně preferencí triviální.
 **Doporučený hybridní model (2 vstupní body a 1 cross-reference):**
 
 ### 1. Výchozí pohled: funkční kategorie
+
 URL: `/expenses`, `/incomes` — 11 resp. 6 skupin, srozumitelné laiku
 
 ### 2. Stránka kategorie: inline „Kdo to spravuje"
+
 URL: `/expenses/education`
 Přidat sekci: „Správci výdajů na Vzdělávání"
+
 ```
 MŠMT (333) ............ 85 %  → odkaz na detail kapitoly
 AV ČR (361) ............ 8 %
 Ostatní (kraje, fondy) . 7 %
 ```
+
 Implementace: z Monitor dat agregovat kapitola-dimenzi filtrovanou na daný paragraf/oddíl.
 
 ### 3. Nová stránka: přehled kapitol (sekundární sekce)
+
 URL: `/expenses/chapters` nebo `/ministries`
+
 - Přehled všech 47 kapitol (SR 2025) seřazených sestupně podle objemu
 - Pro každou kapitolu: název, celková výše, breakdown na funkční kategorie
 - Kliknutím na kapitolu → detail: co ministerstvo dělá a na co výdaje jdou
@@ -561,6 +578,7 @@ URL: `/expenses/chapters` nebo `/ministries`
 - Kompletní seznam kapitol viz příloha na konci dokumentu
 
 ### Hierarchie v aplikaci (2 úrovně a cross-reference)
+
 ```
 Výdaje
 ├── Sociální péče (funkční kategorie)         ← hlavní navigace
@@ -609,79 +627,86 @@ Kapitoly jsou seskupené tematicky pro snadnější orientaci — v zákoně sam
 jsou jen seznam dle čísel.
 
 ### Ústavní činitelé a kontrolní orgány
-| Kód | Kapitola |
-|---|---|
-| 301 | Kancelář prezidenta republiky |
-| 302 | Poslanecká sněmovna Parlamentu |
-| 303 | Senát Parlamentu |
-| 304 | Úřad vlády České republiky |
+
+| Kód | Kapitola                         |
+| --- | -------------------------------- |
+| 301 | Kancelář prezidenta republiky    |
+| 302 | Poslanecká sněmovna Parlamentu   |
+| 303 | Senát Parlamentu                 |
+| 304 | Úřad vlády České republiky       |
 | 309 | Kancelář veřejného ochránce práv |
-| 358 | Ústavní soud |
-| 359 | Úřad Národní rozpočtové rady |
-| 381 | Nejvyšší kontrolní úřad |
+| 358 | Ústavní soud                     |
+| 359 | Úřad Národní rozpočtové rady     |
+| 381 | Nejvyšší kontrolní úřad          |
 
 ### Ministerstva (14)
-| Kód | Kapitola | Zkratka |
-|---|---|---|
-| 306 | Ministerstvo zahraničních věcí | MZV |
-| 307 | Ministerstvo obrany | MO |
-| 312 | Ministerstvo financí | MF |
-| 313 | Ministerstvo práce a sociálních věcí | MPSV |
-| 314 | Ministerstvo vnitra | MV |
-| 315 | Ministerstvo životního prostředí | MŽP |
-| 317 | Ministerstvo pro místní rozvoj | MMR |
-| 322 | Ministerstvo průmyslu a obchodu | MPO |
-| 327 | Ministerstvo dopravy | MD |
-| 329 | Ministerstvo zemědělství | MZe |
-| 333 | Ministerstvo školství, mládeže a tělovýchovy | MŠMT |
-| 334 | Ministerstvo kultury | MK |
-| 335 | Ministerstvo zdravotnictví | MZd |
-| 336 | Ministerstvo spravedlnosti | MSp |
+
+| Kód | Kapitola                                     | Zkratka |
+| --- | -------------------------------------------- | ------- |
+| 306 | Ministerstvo zahraničních věcí               | MZV     |
+| 307 | Ministerstvo obrany                          | MO      |
+| 312 | Ministerstvo financí                         | MF      |
+| 313 | Ministerstvo práce a sociálních věcí         | MPSV    |
+| 314 | Ministerstvo vnitra                          | MV      |
+| 315 | Ministerstvo životního prostředí             | MŽP     |
+| 317 | Ministerstvo pro místní rozvoj               | MMR     |
+| 322 | Ministerstvo průmyslu a obchodu              | MPO     |
+| 327 | Ministerstvo dopravy                         | MD      |
+| 329 | Ministerstvo zemědělství                     | MZe     |
+| 333 | Ministerstvo školství, mládeže a tělovýchovy | MŠMT    |
+| 334 | Ministerstvo kultury                         | MK      |
+| 335 | Ministerstvo zdravotnictví                   | MZd     |
+| 336 | Ministerstvo spravedlnosti                   | MSp     |
 
 ### Bezpečnostní a zpravodajské služby
-| Kód | Kapitola |
-|---|---|
-| 305 | Bezpečnostní informační služba (BIS) |
-| 308 | Národní bezpečnostní úřad (NBÚ) |
-| 376 | Generální inspekce bezpečnostních sborů (GIBS) |
+
+| Kód | Kapitola                                                       |
+| --- | -------------------------------------------------------------- |
+| 305 | Bezpečnostní informační služba (BIS)                           |
+| 308 | Národní bezpečnostní úřad (NBÚ)                                |
+| 376 | Generální inspekce bezpečnostních sborů (GIBS)                 |
 | 378 | Národní úřad pro kybernetickou a informační bezpečnost (NÚKIB) |
 
 ### Regulační a kontrolní úřady
-| Kód | Kapitola |
-|---|---|
-| 328 | Český telekomunikační úřad (ČTÚ) |
-| 343 | Úřad pro ochranu osobních údajů (ÚOOÚ) |
-| 344 | Úřad průmyslového vlastnictví (ÚPV) |
-| 345 | Český statistický úřad (ČSÚ) |
-| 346 | Český úřad zeměměřický a katastrální (ČÚZK) |
-| 348 | Český báňský úřad |
-| 349 | Energetický regulační úřad (ERÚ) |
-| 353 | Úřad pro ochranu hospodářské soutěže (ÚOHS) |
+
+| Kód | Kapitola                                                               |
+| --- | ---------------------------------------------------------------------- |
+| 328 | Český telekomunikační úřad (ČTÚ)                                       |
+| 343 | Úřad pro ochranu osobních údajů (ÚOOÚ)                                 |
+| 344 | Úřad průmyslového vlastnictví (ÚPV)                                    |
+| 345 | Český statistický úřad (ČSÚ)                                           |
+| 346 | Český úřad zeměměřický a katastrální (ČÚZK)                            |
+| 348 | Český báňský úřad                                                      |
+| 349 | Energetický regulační úřad (ERÚ)                                       |
+| 353 | Úřad pro ochranu hospodářské soutěže (ÚOHS)                            |
 | 371 | Úřad pro dohled nad hospodařením politických stran a politických hnutí |
-| 372 | Rada pro rozhlasové a televizní vysílání (RRTV) |
-| 375 | Státní úřad pro jadernou bezpečnost (SÚJB) |
+| 372 | Rada pro rozhlasové a televizní vysílání (RRTV)                        |
+| 375 | Státní úřad pro jadernou bezpečnost (SÚJB)                             |
 
 ### Věda, výzkum a inovace
-| Kód | Kapitola |
-|---|---|
-| 321 | Grantová agentura České republiky (GA ČR) |
-| 361 | Akademie věd České republiky (AV ČR) |
+
+| Kód | Kapitola                                       |
+| --- | ---------------------------------------------- |
+| 321 | Grantová agentura České republiky (GA ČR)      |
+| 361 | Akademie věd České republiky (AV ČR)           |
 | 377 | Technologická agentura České republiky (TA ČR) |
 
 ### Ostatní speciální orgány
-| Kód | Kapitola |
-|---|---|
+
+| Kód | Kapitola                                    |
+| --- | ------------------------------------------- |
 | 355 | Ústav pro studium totalitních režimů (ÚSTR) |
-| 362 | Národní sportovní agentura (NSA) |
-| 364 | Digitální a informační agentura (DIA) |
-| 374 | Správa státních hmotných rezerv (SSHR) |
+| 362 | Národní sportovní agentura (NSA)            |
+| 364 | Digitální a informační agentura (DIA)       |
+| 374 | Správa státních hmotných rezerv (SSHR)      |
 
 ### Souhrnné kapitoly (státní finance)
-| Kód | Kapitola | ~Výdaje 2025 | Co obsahuje |
-|---|---|---|---|
-| 396 | Státní dluh | ~110 mld. Kč | Obsluha státního dluhu — úroky z dluhopisů, poplatky |
-| 397 | Operace státních finančních aktiv | ~10 mil. Kč | Finanční transakce SFA |
-| 398 | Všeobecná pokladní správa | ~271 mld. Kč | Vládní rozpočtová rezerva, transfery územním rozpočtům (sdílené daně), ostatní souhrnné výdaje |
+
+| Kód | Kapitola                          | ~Výdaje 2025 | Co obsahuje                                                                                    |
+| --- | --------------------------------- | ------------ | ---------------------------------------------------------------------------------------------- |
+| 396 | Státní dluh                       | ~110 mld. Kč | Obsluha státního dluhu — úroky z dluhopisů, poplatky                                           |
+| 397 | Operace státních finančních aktiv | ~10 mil. Kč  | Finanční transakce SFA                                                                         |
+| 398 | Všeobecná pokladní správa         | ~271 mld. Kč | Vládní rozpočtová rezerva, transfery územním rozpočtům (sdílené daně), ostatní souhrnné výdaje |
 
 > **Pozn. k zdravotnictví:** Zdravotní pojišťovny (VZP, ZPMV, OZP, VoZP, ČPZP,
 > RBP, ZP Škoda) mají vlastní rozpočty **mimo státní rozpočet** — v seznamu
@@ -696,16 +721,16 @@ jsou jen seznam dle čísel.
 
 Pro implementaci `ChapterBreakdown.tsx` (kdo spravuje danou kategorii):
 
-| Funkční kategorie | Hlavní kapitoly |
-|---|---|
-| Sociální péče (`socialProtection`) | 313 (MPSV) — ~95 %, zbytek 398 |
-| Zdravotnictví (`healthcare`) | 335 (MZd) — drtivá většina, 398 (platba za st. pojištěnce) |
-| Vzdělávání (`education`) | 333 (MŠMT) — ~85 %, 361 (AV ČR), 321/377 (GA/TA ČR) |
-| Obrana a bezpečnost (`defenseAndSecurity`) | 307 (MO), 314 (MV — Policie a IZS), 305/308/378 (zprav./kyber) |
-| Doprava a infrastruktura (`transport`) | 327 (MD) a SFDI |
-| Obsluha státního dluhu (`debtService`) | 396 |
-| Státní správa a justice (`publicAdministration`) | 312 (MF), 336 (MSp), 302/303 (Parlament), 304, 301, ústavní orgány |
-| Podpora obcí a krajů (`municipalTransfers`) | 398 (VPS — sdílené daně, dotace) |
-| Zemědělství a životní prostředí (`environmentAndAgriculture`) | 329 (MZe), 315 (MŽP) |
-| Kultura a sport (`cultureAndSport`) | 334 (MK), 362 (NSA) |
-| Hospodářství a energetika (`industryAndEconomy`) | 322 (MPO), 349 (ERÚ) |
+| Funkční kategorie                                             | Hlavní kapitoly                                                    |
+| ------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Sociální péče (`socialProtection`)                            | 313 (MPSV) — ~95 %, zbytek 398                                     |
+| Zdravotnictví (`healthcare`)                                  | 335 (MZd) — drtivá většina, 398 (platba za st. pojištěnce)         |
+| Vzdělávání (`education`)                                      | 333 (MŠMT) — ~85 %, 361 (AV ČR), 321/377 (GA/TA ČR)                |
+| Obrana a bezpečnost (`defenseAndSecurity`)                    | 307 (MO), 314 (MV — Policie a IZS), 305/308/378 (zprav./kyber)     |
+| Doprava a infrastruktura (`transport`)                        | 327 (MD) a SFDI                                                    |
+| Obsluha státního dluhu (`debtService`)                        | 396                                                                |
+| Státní správa a justice (`publicAdministration`)              | 312 (MF), 336 (MSp), 302/303 (Parlament), 304, 301, ústavní orgány |
+| Podpora obcí a krajů (`municipalTransfers`)                   | 398 (VPS — sdílené daně, dotace)                                   |
+| Zemědělství a životní prostředí (`environmentAndAgriculture`) | 329 (MZe), 315 (MŽP)                                               |
+| Kultura a sport (`cultureAndSport`)                           | 334 (MK), 362 (NSA)                                                |
+| Hospodářství a energetika (`industryAndEconomy`)              | 322 (MPO), 349 (ERÚ)                                               |

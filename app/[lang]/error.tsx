@@ -9,13 +9,7 @@ const messages = {
 
 type Locale = keyof typeof messages
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const pathname = usePathname()
   const locale = (pathname?.split('/')[1] as Locale) ?? 'cs'
   const { heading, retry } = messages[locale] ?? messages.cs

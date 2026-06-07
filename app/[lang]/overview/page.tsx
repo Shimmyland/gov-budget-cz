@@ -1,17 +1,13 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
-import { getBudgetYear, getBudgetYears } from '@/app/_services/budgetService'
+import { getBudgetYear, getBudgetYears } from '@/app/_services/budget.service'
 import dynamic from 'next/dynamic'
 import { RED_PALETTE } from '@/app/lib/palette'
 import { ChartCard } from '@/app/components/ChartCard'
 
-const AreaTrendChart = dynamic(() =>
-  import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })),
-)
-const BudgetPieChart = dynamic(() =>
-  import('@/app/components/BudgetPieChart').then((m) => ({ default: m.BudgetPieChart })),
-)
+const AreaTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
+const BudgetPieChart = dynamic(() => import('@/app/components/BudgetPieChart').then((m) => ({ default: m.BudgetPieChart })))
 import { SummaryCard } from '@/app/components/SummaryCard'
 import { formatBillions, translateCategories } from '@/app/lib/format'
 
@@ -45,8 +41,7 @@ export default async function OverviewPage({ params, searchParams }: PageProps<'
     <main className="page-container">
       {/* Title */}
       <h1 className="text-foreground text-3xl font-bold">
-        {dict.overview.title}{' '}
-        <span className="text-muted-foreground font-normal">({year})</span>
+        {dict.overview.title} <span className="text-muted-foreground font-normal">({year})</span>
       </h1>
 
       {/* Summary cards */}
@@ -67,11 +62,7 @@ export default async function OverviewPage({ params, searchParams }: PageProps<'
       </div>
 
       {/* Budget trend chart */}
-      <ChartCard
-        title={dict.chart.budgetTrend}
-        subtitle={`${chartData[0]?.year}–${year}`}
-        subtitleNote={dict.chart.chartUnit}
-      >
+      <ChartCard title={dict.chart.budgetTrend} subtitle={`${chartData[0]?.year}–${year}`} subtitleNote={dict.chart.chartUnit}>
         <AreaTrendChart
           data={chartData}
           series={[

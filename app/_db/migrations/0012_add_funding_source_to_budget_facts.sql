@@ -1,1 +1,0 @@
-ALTER TABLE "budget_facts" ADD COLUMN "funding_source_code" char(1);

@@ -4,9 +4,8 @@ import { memo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import { formatBillions } from '@/app/lib/format'
 import { ChartTooltip } from '@/app/components/ChartTooltip'
-import { useContainerWidth } from '@/app/lib/hooks/useContainerWidth'
-import { useCSSColors } from '@/app/lib/hooks/useCSSColors'
-import { readCSSVar } from '@/app/lib/css'
+import { useContainerWidth } from '@/app/lib/hooks/use-container-width'
+import { useCSSColors, readCSSVar } from '@/app/lib/hooks/use-css-colors'
 import { CHART_HEIGHT } from '@/app/lib/constants'
 
 export interface TrendSeries {
@@ -91,25 +90,15 @@ export const AreaTrendChart = memo(function AreaTrendChart({ data, series, unit,
               ))}
           </defs>
 
-          <XAxis
-            dataKey="year"
-            tick={{ fill: tickColor, fontSize: 11 }}
-            axisLine={{ stroke: tickColor + '40' }}
-            tickLine={false}
-          />
+          <XAxis dataKey="year" tick={{ fill: tickColor, fontSize: 11 }} axisLine={{ stroke: tickColor + '40' }} tickLine={false} />
           <YAxis
-            tickFormatter={(v: number) =>
-              formatBillions(v, locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-            }
+            tickFormatter={(v: number) => formatBillions(v, locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             tick={{ fill: tickColor, fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={52}
           />
-          <Tooltip
-            content={<TrendTooltip unit={unit} locale={locale} />}
-            cursor={{ stroke: tickColor + '40', strokeWidth: 1 }}
-          />
+          <Tooltip content={<TrendTooltip unit={unit} locale={locale} />} cursor={{ stroke: tickColor + '40', strokeWidth: 1 }} />
 
           {series.map((s) => (
             <Area

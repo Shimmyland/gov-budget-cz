@@ -10,7 +10,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "npx tsx app/_db/migrate.mts",
     "db:studio": "drizzle-kit studio",
     "etl:ingest": "npx tsx app/_etl/run.mts"
   },

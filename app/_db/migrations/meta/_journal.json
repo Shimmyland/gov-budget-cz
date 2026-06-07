@@ -1,167 +1,27 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1779726941504,
-			"tag": "0000_initial_schema",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1779726988004,
-			"tag": "0001_fiscal_year_totals_view",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1779892871486,
-			"tag": "0002_seed_static_dimensions",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1779966823345,
-			"tag": "0003_extend_functional_tree_from_vyhlaska",
-			"breakpoints": true
-		},
-		{
-			"idx": 4,
-			"version": "7",
-			"when": 1779972845799,
-			"tag": "0004_complete_category_paragraph_map",
-			"breakpoints": true
-		},
-		{
-			"idx": 5,
-			"version": "7",
-			"when": 1779977934875,
-			"tag": "0005_add_fiscal_month_to_budget_facts",
-			"breakpoints": true
-		},
-		{
-			"idx": 6,
-			"version": "7",
-			"when": 1779977947232,
-			"tag": "0006_add_income_paragraf_placeholder",
-			"breakpoints": true
-		},
-		{
-			"idx": 7,
-			"version": "7",
-			"when": 1779978742299,
-			"tag": "0007_extend_economic_classification_from_vyhlaska",
-			"breakpoints": true
-		},
-		{
-			"idx": 8,
-			"version": "7",
-			"when": 1780056134602,
-			"tag": "0008_org_unit_id_not_null",
-			"breakpoints": true
-		},
-		{
-			"idx": 9,
-			"version": "7",
-			"when": 1780060814443,
-			"tag": "0009_fiscal_year_totals_split_approved_actual",
-			"breakpoints": true
-		},
-		{
-			"idx": 10,
-			"version": "7",
-			"when": 1780060897727,
-			"tag": "0010_fiscal_year_totals_split_approved_actual_v2",
-			"breakpoints": true
-		},
-		{
-			"idx": 11,
-			"version": "7",
-			"when": 1780070960138,
-			"tag": "0011_add_kapitola_373_updi",
-			"breakpoints": true
-		},
-		{
-			"idx": 12,
-			"version": "7",
-			"when": 1780074176692,
-			"tag": "0012_add_funding_source_to_budget_facts",
-			"breakpoints": true
-		},
-		{
-			"idx": 13,
-			"version": "7",
-			"when": 1780074366730,
-			"tag": "0013_fiscal_year_totals_with_sr_scope",
-			"breakpoints": true
-		},
-		{
-			"idx": 14,
-			"version": "7",
-			"when": 1780074423035,
-			"tag": "0014_fiscal_year_totals_with_sr_scope_v2",
-			"breakpoints": true
-		},
-		{
-			"idx": 15,
-			"version": "7",
-			"when": 1780074499964,
-			"tag": "0015_fiscal_year_totals_with_sr_scope_v3",
-			"breakpoints": true
-		},
-		{
-			"idx": 16,
-			"version": "7",
-			"when": 1780149632483,
-			"tag": "0016_seed_socialProtection_subcategories",
-			"breakpoints": true
-		},
-		{
-			"idx": 17,
-			"version": "7",
-			"when": 1780150438310,
-			"tag": "0017_seed_education_subcategories",
-			"breakpoints": true
-		},
-		{
-			"idx": 18,
-			"version": "7",
-			"when": 1780151585176,
-			"tag": "0018_remove_subcategories_pilot",
-			"breakpoints": true
-		},
-		{
-			"idx": 19,
-			"version": "7",
-			"when": 1780161507536,
-			"tag": "0019_fiscal_year_totals_sr_only",
-			"breakpoints": true
-		},
-		{
-			"idx": 20,
-			"version": "7",
-			"when": 1780248000000,
-			"tag": "0020_budget_facts_full_dimensions",
-			"breakpoints": true
-		},
-		{
-			"idx": 21,
-			"version": "7",
-			"when": 1780249000000,
-			"tag": "0021_fiscal_year_totals_with_deficits",
-			"breakpoints": true
-		},
-		{
-			"idx": 22,
-			"version": "7",
-			"when": 1780249001000,
-			"tag": "0022_fiscal_year_totals_balance",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1780411584583,
+      "tag": "0000_initial_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780411584584,
+      "tag": "0001_fiscal_year_totals_view",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780411584585,
+      "tag": "0002_seed_static_dimensions",
+      "breakpoints": true
+    }
+  ]
 }

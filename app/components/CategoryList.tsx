@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useSortDir } from '@/app/lib/hooks/useSortDir'
+import { useSortDir } from '@/app/lib/hooks/use-sort-dir'
 import Link from 'next/link'
 import { Lock, Unlock, ArrowUp, ArrowDown } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { formatBillions, pluralizeLabel } from '@/app/lib/format'
-import { BADGE_CLASSES } from '@/app/lib/badge'
+import { BADGE_CLASSES } from '@/app/lib/constants'
 
 type Filter = 'all' | 'mandatory' | 'discretionary'
 
@@ -45,17 +45,7 @@ interface CategoryListProps {
   descriptions: Record<string, string>
 }
 
-export function CategoryList({
-  data,
-  total,
-  unit,
-  lang,
-  year,
-  section,
-  showFilter = false,
-  labels,
-  descriptions,
-}: CategoryListProps) {
+export function CategoryList({ data, total, unit, lang, year, section, showFilter = false, labels, descriptions }: CategoryListProps) {
   const { sort, dir, setSort, toggleDir, applySort } = useSortDir()
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -144,11 +134,7 @@ export function CategoryList({
           const desc = descriptions[item.routeKey] ?? ''
 
           return (
-            <Link
-              key={item.name}
-              href={href}
-              className="card-interactive flex flex-col gap-3 px-4"
-            >
+            <Link key={item.name} href={href} className="card-interactive flex flex-col gap-3 px-4">
               <div className="flex items-baseline justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} />
@@ -169,7 +155,9 @@ export function CategoryList({
 
               <div className="flex items-baseline justify-between gap-4">
                 <p className="text-muted-foreground line-clamp-1 min-w-0 text-xs">{desc}</p>
-                <span className="text-muted-foreground shrink-0 text-xs">{pctLabel} {labels.ofTotal}</span>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {pctLabel} {labels.ofTotal}
+                </span>
               </div>
 
               <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">

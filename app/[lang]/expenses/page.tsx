@@ -1,19 +1,15 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
-import { getBudgetYear, getBudgetYears } from '@/app/_services/budgetService'
+import { getBudgetYear, getBudgetYears } from '@/app/_services/budget.service'
 import { ChartCard } from '@/app/components/ChartCard'
 import { translateCategories, formatBillions } from '@/app/lib/format'
 import { buildColorMap, RED_PALETTE, EXPENSE_COLOR_DARK, EXPENSE_COLOR_LIGHT } from '@/app/lib/palette'
-import { BADGE_CLASSES } from '@/app/lib/badge'
+import { BADGE_CLASSES } from '@/app/lib/constants'
 import dynamic from 'next/dynamic'
 
-const SubcategoryBarChart = dynamic(() =>
-  import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })),
-)
-const CategoryTrendChart = dynamic(() =>
-  import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })),
-)
+const SubcategoryBarChart = dynamic(() => import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })))
+const CategoryTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
 import { CategoryList } from '@/app/components/CategoryList'
 
 export default async function ExpensesPage({ params, searchParams }: PageProps<'/[lang]/expenses'>) {
@@ -81,16 +77,12 @@ export default async function ExpensesPage({ params, searchParams }: PageProps<'
       </div>
 
       {/* Charts — bar 60%, area trend 40% */}
-      <div className="grid gap-8 grid-chart">
+      <div className="grid-chart grid gap-8">
         <ChartCard title={e.barChartTitle} subtitle={`${year}`} subtitleNote={dict.chart.chartUnit}>
           <SubcategoryBarChart data={coloredExpenditures} unit={dict.chart.unit} locale={lang} />
         </ChartCard>
 
-        <ChartCard
-          title={dict.chart.expenditure}
-          subtitle={`${trendData[0]?.year}–${year}`}
-          subtitleNote={dict.chart.chartUnit}
-        >
+        <ChartCard title={dict.chart.expenditure} subtitle={`${trendData[0]?.year}–${year}`} subtitleNote={dict.chart.chartUnit}>
           <CategoryTrendChart
             data={trendData}
             series={[{ dataKey: 'value', name: dict.chart.expenditure, colorDark: EXPENSE_COLOR_DARK, colorLight: EXPENSE_COLOR_LIGHT }]}

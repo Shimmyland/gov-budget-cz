@@ -1,6 +1,6 @@
 # Features roadmap
 
-Seznam **odložených features** — věci, které během práce vyplynuly jako *užitečné, ale ne kritické* pro aktuální MVP. Každá má dost kontextu, aby se k ní šlo později vrátit bez ztráty paměti.
+Seznam **odložených features** — věci, které během práce vyplynuly jako _užitečné, ale ne kritické_ pro aktuální MVP. Každá má dost kontextu, aby se k ní šlo později vrátit bez ztráty paměti.
 
 Formát: každá feature obsahuje (a) motivaci, (b) technické požadavky, (c) odhad práce, (d) blokátory pokud nějaké jsou.
 
@@ -12,12 +12,13 @@ Formát: každá feature obsahuje (a) motivaci, (b) technické požadavky, (c) o
 
 MF reportuje schodek SR **ve dvou metodikách vedle sebe** ve všech oficiálních dokumentech (Pokladní plnění TZ, Sešit C Závěrečného účtu):
 
-| Metodika | 2024 hodnota | Co měří |
-|---|---|---|
-| **Total schodek SR** | 271.4 mld | Skutečný cash deficit za rok (headline) |
-| **Schodek po očištění o EU/FM** | 288.9 mld | "Kolik by byl schodek, kdyby neexistovaly EU peníze" — ukazuje strukturální deficit financovaný z domácích zdrojů |
+| Metodika                        | 2024 hodnota | Co měří                                                                                                           |
+| ------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **Total schodek SR**            | 271.4 mld    | Skutečný cash deficit za rok (headline)                                                                           |
+| **Schodek po očištění o EU/FM** | 288.9 mld    | "Kolik by byl schodek, kdyby neexistovaly EU peníze" — ukazuje strukturální deficit financovaný z domácích zdrojů |
 
 Aplikace dnes ukazuje **jen first metric**. Druhá by:
+
 - Konzistentně s MF reportingem
 - Edukativně — uživatel vidí roli EU peněz v SR
 - Politicky relevantní — "po očištění" se cituje v ekonomické debatě (kolik bychom utratili sami za sebe)
@@ -42,10 +43,12 @@ DB schéma už je **připravené** — má sloupec `nastroj_code` (#7 nástrojov
 ### Blokátor: přesné MF mapping
 
 MF Sešit C Tabulka 78 používá **5-digit nástrojové kódy** (např. `14600` = OP Doprava CF 2021+, `17000` = NPO RRF). MIS-RIS CSV ovšem exportuje **4-digit kódy** (např. `0146`, `0170`). Vztah mezi nimi:
+
 - **Empirický:** sum 01xx v naší DB pro 2024 = 162.2 mld → matches MF "EU+ČR programy + SZP" 161.9 mld (±0.2 %)
 - **Per-program:** přesné 1:1 mapping není veřejně publikované. MF interní číselník nástrojů je v IISSP portálu jen pro registrované uživatele.
 
 **Důsledek:** lze identifikovat "vše co je EU/FM tagováno" (~162 mld), ale **nelze přesně oddělit "EU refundovatelnou část" (142.7 mld) od "národního spolufinancování" (19.5 mld)**. Pro přesný match MF "po očištění" 288.9 mld by bylo potřeba toto rozlišení — vyžaduje:
+
 - (a) Buď kontakt MF metodického oddělení o jejich číselník
 - (b) Nebo přidat další MIS-RIS sloupec (pravděpodobně neexistuje s touto granularitou v exportu)
 
@@ -56,7 +59,7 @@ MF Sešit C Tabulka 78 používá **5-digit nástrojové kódy** (např. `14600`
 
 ### Status
 
-**Odložena.** Audit goal byl matching MF *Total schodek*, který je splněn (2024 diff +0.1 mld). "Po očištění" je doplňková analytika, ne core feature.
+**Odložena.** Audit goal byl matching MF _Total schodek_, který je splněn (2024 diff +0.1 mld). "Po očištění" je doplňková analytika, ne core feature.
 
 ---
 
@@ -104,6 +107,7 @@ Odložena. MVP používá batch ETL, který stačí. Live data má smysl až s a
 ### Motivace
 
 DB ukládá `value_obligation` (ZU_OBLIG z MIS-RIS) = **podepsané závazky státu, dosud nezaplacené**. Toto je forward-looking metrika důležitá pro:
+
 - Credit rating analytici (Moody's, S&P, Fitch sledují fiscal commitments)
 - Investoři do CZK sovereign debt
 - Fiscal advisory consulting firmy
@@ -131,6 +135,7 @@ Odložena. Datová vrstva připravená (sloupec v `budget_facts`), čeká na use
 ### Motivace
 
 DB ukládá `fund_code` (ZC_FUND, doplňkové třídění #8 z vyhlášky 412/2021 Sb.). Toto identifikuje **účelově sledované celky** — specifické topické okruhy napříč kapitolami:
+
 - Pomoc Ukrajině (válka 2022+)
 - Covid kompenzace 2020-22 (specifické fondy)
 - Povodňové škody 2024

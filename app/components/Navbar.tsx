@@ -16,7 +16,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { YEARS, DEFAULT_YEAR } from '@/app/lib/years'
-import type { BudgetYear } from '@/lib/types'
+import type { BudgetYear } from '@/app/lib/types'
 import type { Locale } from '@/app/[lang]/dictionaries'
 
 function HalfCircleIcon() {
@@ -118,7 +118,11 @@ export function Navbar({ locale, navDict }: NavbarProps) {
             <NavigationMenuList>
               {navLinks.map((link) => (
                 <NavigationMenuItem key={link.label}>
-                  <NavigationMenuLink href={link.href} active={pathname.startsWith(link.href.split('?')[0] ?? '')} className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink
+                    href={link.href}
+                    active={pathname.startsWith(link.href.split('?')[0] ?? '')}
+                    className={navigationMenuTriggerStyle()}
+                  >
                     {link.label}
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -132,18 +136,18 @@ export function Navbar({ locale, navDict }: NavbarProps) {
           {/* Year select */}
           <div className="flex items-center gap-1.5">
             <span className="text-muted-foreground hidden text-xs lg:block">{navDict.yearLabel}:</span>
-          <Select value={String(currentYear)} onValueChange={handleYearChange}>
-            <SelectTrigger className="bg-muted border-border text-foreground w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-card border-border">
-              {YEARS.map((year) => (
-                <SelectItem key={year} value={String(year)} className="text-foreground focus:bg-accent">
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select value={String(currentYear)} onValueChange={handleYearChange}>
+              <SelectTrigger className="bg-muted border-border text-foreground w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border">
+                {YEARS.map((year) => (
+                  <SelectItem key={year} value={String(year)} className="text-foreground focus:bg-accent">
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Language switcher */}

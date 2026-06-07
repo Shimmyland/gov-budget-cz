@@ -3,7 +3,8 @@ import type { Dictionary } from '@/app/[lang]/dictionaries'
 import type { Locale } from '@/app/[lang]/dictionaries'
 import { formatBillions } from '@/app/lib/format'
 
-const btnBase = 'inline-flex cursor-pointer items-center justify-center rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all h-9 gap-1.5 px-3'
+const btnBase =
+  'inline-flex cursor-pointer items-center justify-center rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all h-9 gap-1.5 px-3'
 const btnPrimary = `${btnBase} bg-primary text-primary-foreground`
 
 interface HeroSectionProps {
@@ -40,25 +41,20 @@ export function HeroSection({ locale, dict, stats }: HeroSectionProps) {
 
         <div className="text-muted-foreground border-border mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t pt-6 text-sm">
           <span>
-            <span className="text-foreground font-semibold tabular-nums">{stats.revenue}</span>{' '}
-            <span className="text-xs">{c.unit}</span>{' '}
+            <span className="text-foreground font-semibold tabular-nums">{stats.revenue}</span> <span className="text-xs">{c.unit}</span>{' '}
             {c.revenue.toLowerCase()}
           </span>
           <span className="hidden sm:inline">·</span>
           <span>
             <span className="text-foreground font-semibold tabular-nums">{stats.expenditure}</span>{' '}
-            <span className="text-xs">{c.unit}</span>{' '}
-            {c.expenditure.toLowerCase()}
+            <span className="text-xs">{c.unit}</span> {c.expenditure.toLowerCase()}
           </span>
           <span className="hidden sm:inline">·</span>
           <span>
-            <span className={`${isDeficit ? 'text-danger' : 'text-foreground'} font-semibold tabular-nums`}>
-              {balanceAmount}
-            </span>{' '}
-            <span className="text-xs">{c.unit}</span>{' '}
-            {balanceLabel}
+            <span className={`${isDeficit ? 'text-danger' : 'text-foreground'} font-semibold tabular-nums`}>{balanceAmount}</span>{' '}
+            <span className="text-xs">{c.unit}</span> {balanceLabel}
           </span>
-          <span className="text-muted-foreground/60 text-xs self-end">({l.statsYear})</span>
+          <span className="text-muted-foreground/60 self-end text-xs">({l.statsYear})</span>
         </div>
       </div>
     </section>

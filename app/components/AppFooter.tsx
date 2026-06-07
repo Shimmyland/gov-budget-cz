@@ -14,9 +14,7 @@ export function AppFooter({ dict }: AppFooterProps) {
           <Landmark size={14} className="text-muted-foreground" />
           <span className="text-foreground text-xs font-medium">{dict.nav.logoTitle}</span>
         </div>
-        <span className="text-muted-foreground hidden text-xs sm:block">
-          {dict.landing.footerAttribution}
-        </span>
+        <span className="text-muted-foreground hidden text-xs sm:block">{dict.landing.footerAttribution}</span>
       </div>
     </footer>
   )

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from './dictionaries'
-import { getBudgetYear } from '@/app/_services/budgetService'
+import { getBudgetYear } from '@/app/_services/budget.service'
 import { formatBillions } from '@/app/lib/format'
 import { HeroSection } from '@/app/components/landing/HeroSection'
 import { FeatureCards } from '@/app/components/landing/FeatureCards'

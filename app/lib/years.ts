@@ -3,7 +3,7 @@
 // year selector and route validation need a synchronous list at render time.
 // When ETL imports a new year, add it here as well.
 
-import type { BudgetYear } from '@/lib/types'
+import type { BudgetYear } from '@/app/lib/types'
 
 export const YEARS: BudgetYear[] = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 export const DEFAULT_YEAR: BudgetYear = 2025

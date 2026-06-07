@@ -1,4 +1,4 @@
-import { BADGE_CLASSES } from '@/app/lib/badge'
+import { BADGE_CLASSES } from '@/app/lib/constants'
 
 interface SummaryCardProps {
   label: string

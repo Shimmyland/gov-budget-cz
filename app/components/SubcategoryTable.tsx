@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useSortDir } from '@/app/lib/hooks/useSortDir'
+import { useSortDir } from '@/app/lib/hooks/use-sort-dir'
 import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import type { PieSlice } from '@/lib/types'
+import type { PieSlice } from '@/app/lib/types'
 import { formatBillions } from '@/app/lib/format'
 
 interface SubcategoryTableProps {
@@ -69,7 +69,7 @@ export function SubcategoryTable({ data, totalValue, unit, locale, descriptions,
               <Card className="hover:border-foreground/20 h-full transition-all duration-200 ease-out hover:-translate-y-1">
                 <div className="flex flex-col gap-2 p-4">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-foreground min-w-0 truncate text-sm font-medium leading-snug">{sub.name}</span>
+                    <span className="text-foreground min-w-0 truncate text-sm leading-snug font-medium">{sub.name}</span>
                     <div className="flex shrink-0 items-baseline gap-1">
                       <span className="text-sm font-semibold tabular-nums" style={{ color: sub.color }}>
                         {fmt(sub.value)}
@@ -102,10 +102,7 @@ export function SubcategoryTable({ data, totalValue, unit, locale, descriptions,
       </div>
 
       {selected && (
-        <div
-          onClick={() => setSelected(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md"
-        >
+        <div onClick={() => setSelected(null)} className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-card border-border mx-4 w-full max-w-[420px] rounded-2xl border p-6 shadow-2xl"
@@ -149,9 +146,7 @@ export function SubcategoryTable({ data, totalValue, unit, locale, descriptions,
             </div>
 
             {descriptions[selected.name] && (
-              <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-                {descriptions[selected.name]}
-              </p>
+              <p className="text-muted-foreground mt-4 text-sm leading-relaxed">{descriptions[selected.name]}</p>
             )}
           </div>
         </div>

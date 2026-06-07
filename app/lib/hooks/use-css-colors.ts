@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import type { DependencyList } from 'react'
 
-export function useCSSColors<T extends Record<string, string>>(
-  resolver: () => T,
-  deps: DependencyList = [],
-): T {
+export function readCSSVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+export function useCSSColors<T extends Record<string, string>>(resolver: () => T, deps: DependencyList = []): T {
   const [value, setValue] = useState<T>({} as T)
 
   useEffect(() => {

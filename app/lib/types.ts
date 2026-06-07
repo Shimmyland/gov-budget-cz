@@ -1,6 +1,11 @@
 export type BudgetYear = 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025
 
-export interface PieSlice {
+export type MonitorPackage = {
+  year: number
+  month: number // 1-12
+}
+
+export type PieSlice = {
   name: string
   value: number // CZK billions
   mandatory?: boolean
@@ -9,12 +14,12 @@ export interface PieSlice {
   subcategoryCount?: number
 }
 
-export interface SubCategory {
+export type SubCategory = {
   name: string // translation key
   value: number
 }
 
-export interface KapitolaData {
+export type KapitolaData = {
   kod: string // e.g. '313'
   name: string // e.g. 'Ministerstvo práce a sociálních věcí'
   value: number
@@ -22,7 +27,13 @@ export interface KapitolaData {
 
 export type ViewMode = 'functional' | 'chapter'
 
-export interface YearData {
+export type DimensionMaps = {
+  chapter: Map<string, number>
+  paragraph: Map<string, number>
+  item: Map<string, number>
+}
+
+export type YearData = {
   year: BudgetYear
   totalRevenue: number
   totalExpenditure: number

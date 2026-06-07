@@ -2,11 +2,20 @@ CREATE TYPE "public"."category_type" AS ENUM('expense', 'income');--> statement-
 CREATE TABLE "budget_facts" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"fiscal_year" smallint NOT NULL,
-	"org_unit_id" integer,
+	"fiscal_month" smallint NOT NULL,
+	"org_unit_id" integer NOT NULL,
 	"paragraph_id" integer NOT NULL,
 	"item_id" integer NOT NULL,
-	"value" numeric(14, 2) NOT NULL,
-	"is_approved" boolean DEFAULT true NOT NULL
+	"funding_source_code" char(1),
+	"nastroj_code" varchar(20),
+	"fund_code" varchar(20),
+	"eds_code" varchar(20),
+	"ucris_code" varchar(20),
+	"value_approved" numeric(14, 2),
+	"value_amended" numeric(14, 2),
+	"value_final" numeric(14, 2),
+	"value_actual" numeric(14, 2),
+	"value_obligation" numeric(14, 2)
 );
 --> statement-breakpoint
 CREATE TABLE "categories" (
@@ -34,7 +43,7 @@ CREATE TABLE "chapter_org_units" (
 --> statement-breakpoint
 CREATE TABLE "chapters" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"code" varchar(10) NOT NULL,
+	"code" varchar(20) NOT NULL,
 	"slug" varchar(100) NOT NULL,
 	CONSTRAINT "chapters_code_unique" UNIQUE("code"),
 	CONSTRAINT "chapters_slug_unique" UNIQUE("slug")
@@ -110,7 +119,9 @@ ALTER TABLE "economic_items" ADD CONSTRAINT "economic_items_group_id_economic_gr
 ALTER TABLE "functional_paragraphs" ADD CONSTRAINT "functional_paragraphs_subdivision_id_functional_subdivisions_id_fk" FOREIGN KEY ("subdivision_id") REFERENCES "public"."functional_subdivisions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "functional_subdivisions" ADD CONSTRAINT "functional_subdivisions_division_id_functional_divisions_id_fk" FOREIGN KEY ("division_id") REFERENCES "public"."functional_divisions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_facts_fiscal_year" ON "budget_facts" USING btree ("fiscal_year");--> statement-breakpoint
+CREATE INDEX "idx_facts_year_month" ON "budget_facts" USING btree ("fiscal_year","fiscal_month");--> statement-breakpoint
 CREATE INDEX "idx_facts_org_unit" ON "budget_facts" USING btree ("org_unit_id");--> statement-breakpoint
 CREATE INDEX "idx_facts_paragraph" ON "budget_facts" USING btree ("paragraph_id");--> statement-breakpoint
 CREATE INDEX "idx_facts_item" ON "budget_facts" USING btree ("item_id");--> statement-breakpoint
-CREATE INDEX "idx_facts_year_org" ON "budget_facts" USING btree ("fiscal_year","org_unit_id");
+CREATE INDEX "idx_facts_year_org" ON "budget_facts" USING btree ("fiscal_year","org_unit_id");--> statement-breakpoint
+CREATE INDEX "idx_facts_nastroj" ON "budget_facts" USING btree ("nastroj_code");

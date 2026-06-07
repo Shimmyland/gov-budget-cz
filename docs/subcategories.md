@@ -61,6 +61,7 @@ Intuitivní rozdělení (typ školy, typ pacientského zařízení, …) **nesed
 ### Rozhodnutí: odložit, jít přímo z úrovně 1 do 3
 
 Pro MVP:
+
 - Detail stránka kategorie → ukazuje úroveň 3 (paragrafy) přímo
 - Žádná "level 2" v mezi
 - Migrace pilotu (0016, 0017) byla rollback'nuta v migraci `0018`
@@ -78,14 +79,14 @@ Když přijde čas znovu zkusit úroveň 2:
 
 ## Co zůstalo v repozitáři po pilotním pokusu
 
-| Co | Stav |
-|---|---|
-| Migrace `0016` (socialProtection subkategorie) | Aplikovaná, data odstraněna migrací `0018` |
-| Migrace `0017` (education subkategorie) | Aplikovaná, data odstraněna migrací `0018` |
-| Migrace `0018` (DELETE FROM categories WHERE parent_id IS NOT NULL) | Aplikovaná |
-| Schema `categories.parent_id` | Zachované — připravené pro budoucí use |
-| Schema `category_paragraph_map` | Zachované |
-| Tento dokument | Aktualizován jako future-feature concept |
+| Co                                                                  | Stav                                       |
+| ------------------------------------------------------------------- | ------------------------------------------ |
+| Migrace `0016` (socialProtection subkategorie)                      | Aplikovaná, data odstraněna migrací `0018` |
+| Migrace `0017` (education subkategorie)                             | Aplikovaná, data odstraněna migrací `0018` |
+| Migrace `0018` (DELETE FROM categories WHERE parent_id IS NOT NULL) | Aplikovaná                                 |
+| Schema `categories.parent_id`                                       | Zachované — připravené pro budoucí use     |
+| Schema `category_paragraph_map`                                     | Zachované                                  |
+| Tento dokument                                                      | Aktualizován jako future-feature concept   |
 
 ## Související dokumentace
 

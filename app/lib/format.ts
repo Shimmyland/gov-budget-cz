@@ -1,4 +1,4 @@
-import type { PieSlice } from '@/lib/types'
+import type { PieSlice } from '@/app/lib/types'
 
 export function groupWithOthers(slices: PieSlice[], maxVisible: number, othersLabel: string): PieSlice[] {
   const sorted = [...slices].sort((a, b) => b.value - a.value)

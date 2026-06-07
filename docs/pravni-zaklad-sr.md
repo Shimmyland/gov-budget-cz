@@ -113,17 +113,17 @@ V průběhu roku se zákon zpravidla mění jednou nebo více novelami (typicky 
 
 ### 4.1 Tabulka 2018–2026
 
-| Rok  | Zákon         | Pozn.                                              |
-| ---- | ------------- | -------------------------------------------------- |
-| 2018 | 474/2017 Sb.  |                                                    |
-| 2019 | 336/2018 Sb.  |                                                    |
-| 2020 | 355/2019 Sb.  | Novela 129/2020 Sb. (covid)                        |
-| 2021 | 600/2020 Sb.  | Novela 92/2021 Sb.                                 |
-| 2022 | 57/2022 Sb.   | Účinnost od 19. 3. 2022, do té doby rozpočtové provizorium. Novela 344/2022 Sb. |
-| 2023 | 449/2022 Sb.  |                                                    |
-| 2024 | 433/2023 Sb.  | Novela 294/2024 Sb.                                |
-| 2025 | 434/2024 Sb.  |                                                    |
-| 2026 | 38/2026 Sb.   | Účinnost od 21. 3. 2026, do té doby rozpočtové provizorium |
+| Rok  | Zákon        | Pozn.                                                                           |
+| ---- | ------------ | ------------------------------------------------------------------------------- |
+| 2018 | 474/2017 Sb. |                                                                                 |
+| 2019 | 336/2018 Sb. |                                                                                 |
+| 2020 | 355/2019 Sb. | Novela 129/2020 Sb. (covid)                                                     |
+| 2021 | 600/2020 Sb. | Novela 92/2021 Sb.                                                              |
+| 2022 | 57/2022 Sb.  | Účinnost od 19. 3. 2022, do té doby rozpočtové provizorium. Novela 344/2022 Sb. |
+| 2023 | 449/2022 Sb. |                                                                                 |
+| 2024 | 433/2023 Sb. | Novela 294/2024 Sb.                                                             |
+| 2025 | 434/2024 Sb. |                                                                                 |
+| 2026 | 38/2026 Sb.  | Účinnost od 21. 3. 2026, do té doby rozpočtové provizorium                      |
 
 Plný název každého zákona má formát „Zákon č. XXX/YYYY Sb., o státním rozpočtu České republiky na rok YYYY+1". Aktuální znění a přílohy viz `zakonyprolidi.cz/cs/{rok}-{číslo}` nebo `e-sbirka.cz/sb/{rok}/{číslo}`.
 
@@ -160,10 +160,10 @@ Stanoví zásady a lhůty finančního vypořádání vztahů se státním rozpo
 
 ### 5.6 Mini-tabulka: rok → účinná vyhláška o rozpočtové skladbě
 
-| Rok          | Vyhláška o rozpočtové skladbě                        |
-| ------------ | ---------------------------------------------------- |
-| 2010 – 2021  | č. 323/2002 Sb. (v platném znění daného roku)        |
-| 2022 – dnes  | č. 412/2021 Sb. (v platném znění daného roku)        |
+| Rok         | Vyhláška o rozpočtové skladbě                 |
+| ----------- | --------------------------------------------- |
+| 2010 – 2021 | č. 323/2002 Sb. (v platném znění daného roku) |
+| 2022 – dnes | č. 412/2021 Sb. (v platném znění daného roku) |
 
 Pro období před rokem 2003 platily starší vyhlášky MF, které jsou mimo scope tohoto dokumentu.
 

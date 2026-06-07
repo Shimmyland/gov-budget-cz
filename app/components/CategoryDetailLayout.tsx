@@ -2,27 +2,27 @@ import Link from 'next/link'
 import { Lock, Unlock } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
-import type { PieSlice } from '@/lib/types'
+import type { PieSlice } from '@/app/lib/types'
 import { formatBillions, translateCategories } from '@/app/lib/format'
 import dynamic from 'next/dynamic'
 
-const SubcategoryBarChart = dynamic(() =>
-  import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })),
-)
-const CategoryTrendChart = dynamic(() =>
-  import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })),
-)
+const SubcategoryBarChart = dynamic(() => import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })))
+const CategoryTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
 import { SubcategoryTable } from '@/app/components/SubcategoryTable'
 import { ChartCard } from '@/app/components/ChartCard'
 import { getDictionary, hasLocale, type Locale } from '@/app/[lang]/dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
+import { getBudgetYear, getBudgetYears, getCategorySubcategories } from '@/app/_services/budget.service'
 import {
-  getBudgetYear,
-  getBudgetYears,
-  getCategorySubcategories,
-} from '@/app/_services/budgetService'
-import { applyPaletteColors, GREEN_PALETTE, RED_PALETTE, EXPENSE_COLOR_DARK, EXPENSE_COLOR_LIGHT, INCOME_COLOR_DARK, INCOME_COLOR_LIGHT } from '@/app/lib/palette'
-import { BADGE_CLASSES } from '@/app/lib/badge'
+  applyPaletteColors,
+  GREEN_PALETTE,
+  RED_PALETTE,
+  EXPENSE_COLOR_DARK,
+  EXPENSE_COLOR_LIGHT,
+  INCOME_COLOR_DARK,
+  INCOME_COLOR_LIGHT,
+} from '@/app/lib/palette'
+import { BADGE_CLASSES } from '@/app/lib/constants'
 
 // ─── Layout component ────────────────────────────────────────────────────────
 
@@ -114,7 +114,7 @@ export function CategoryDetailLayout({
 
       {subSlices.length > 0 && (
         <>
-          <div className="grid gap-6 grid-chart">
+          <div className="grid-chart grid gap-6">
             <ChartCard title={subcategoriesTitle} subtitle={`${year}`} subtitleNote={chartUnit} className="min-w-0">
               <SubcategoryBarChart data={subSlices} unit={unit} locale={locale} />
             </ChartCard>
@@ -134,7 +134,14 @@ export function CategoryDetailLayout({
             </ChartCard>
           </div>
 
-          <SubcategoryTable data={subSlices} totalValue={value} unit={unit} locale={locale} descriptions={subcategoryDescriptions} labels={tableLabels} />
+          <SubcategoryTable
+            data={subSlices}
+            totalValue={value}
+            unit={unit}
+            locale={locale}
+            descriptions={subcategoryDescriptions}
+            labels={tableLabels}
+          />
         </>
       )}
     </main>
@@ -166,20 +173,14 @@ export function createCategoryPage(section: Section) {
     const e = dict.expenses
     const i = dict.incomes
 
-    const slice = isExpenses
-      ? data.expenditures.find((s) => s.name === category)
-      : data.revenues.find((s) => s.name === category)
+    const slice = isExpenses ? data.expenditures.find((s) => s.name === category) : data.revenues.find((s) => s.name === category)
     if (!slice) notFound()
 
     const categoryName = isExpenses
       ? (dict.categories.expenses[category as keyof typeof dict.categories.expenses] ?? category)
       : (dict.categories.incomes[category as keyof typeof dict.categories.incomes] ?? category)
 
-    const rawSubs = await getCategorySubcategories(
-      year,
-      category,
-      isExpenses ? 'expense' : 'income',
-    )
+    const rawSubs = await getCategorySubcategories(year, category, isExpenses ? 'expense' : 'income')
     const translatedSubs = translateCategories(rawSubs, dict.categories.subcategories)
     const subSlices = applyPaletteColors(translatedSubs, isExpenses ? RED_PALETTE : GREEN_PALETTE)
 
@@ -192,9 +193,7 @@ export function createCategoryPage(section: Section) {
 
     const allYearData = await getBudgetYears(YEARS)
     const trendData = allYearData.map((yd) => {
-      const s = isExpenses
-        ? yd.expenditures.find((x) => x.name === category)
-        : yd.revenues.find((x) => x.name === category)
+      const s = isExpenses ? yd.expenditures.find((x) => x.name === category) : yd.revenues.find((x) => x.name === category)
       return { year: yd.year, value: s?.value ?? 0 }
     })
 
@@ -226,7 +225,9 @@ export function createCategoryPage(section: Section) {
         ofTotalLabel={isExpenses ? e.ofTotal : i.ofTotal}
         descriptionText={
           isExpenses
-            ? (isMandatory ? e.mandatoryDesc : e.discretionaryDesc)
+            ? isMandatory
+              ? e.mandatoryDesc
+              : e.discretionaryDesc
             : (i.descriptions[category as keyof typeof i.descriptions] ?? '')
         }
         trendData={trendData}

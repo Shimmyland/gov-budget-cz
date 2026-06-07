@@ -6,9 +6,10 @@
 //     Repo returns CZK; we divide here.
 //   - Returns SR-scope actual figures by default (what UI labels as "current").
 
-import type { BudgetYear, PieSlice, SubCategory, YearData } from '@/lib/types'
+import type { BudgetYear, PieSlice, SubCategory, YearData } from '@/app/lib/types'
 
-import * as repo from '@/app/_repositories/budgetRepository'
+import * as repo from '@/app/_repositories/budget.repository'
+import { YEARS } from '@/app/lib/years'
 
 const BILLION = 1e9
 
@@ -53,13 +54,9 @@ export async function getBudgetYear(year: BudgetYear): Promise<YearData> {
   }
 }
 
-const ALLOWED_YEARS: ReadonlyArray<BudgetYear> = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] as const
-
 export async function getAvailableYears(): Promise<BudgetYear[]> {
   const years = await repo.listYears()
-  return years.filter((y): y is BudgetYear =>
-    (ALLOWED_YEARS as readonly number[]).includes(y),
-  )
+  return years.filter((y): y is BudgetYear => (YEARS as readonly number[]).includes(y))
 }
 
 /** Convenience helper for FE pages that need multi-year data (trend charts). */
@@ -76,14 +73,8 @@ export async function getBudgetYears(years: ReadonlyArray<BudgetYear>): Promise<
  * Both paths return the legacy `SubCategory` shape (name + value in billions CZK)
  * so the existing FE component renders without changes.
  */
-export async function getCategorySubcategories(
-  year: BudgetYear,
-  categorySlug: string,
-  type: 'expense' | 'income',
-): Promise<SubCategory[]> {
+export async function getCategorySubcategories(year: BudgetYear, categorySlug: string, type: 'expense' | 'income'): Promise<SubCategory[]> {
   const rows =
-    type === 'expense'
-      ? await repo.getExpenseCategoryPododdily(year, categorySlug)
-      : await repo.getIncomeCategoryItems(year, categorySlug)
+    type === 'expense' ? await repo.getExpenseCategoryPododdily(year, categorySlug) : await repo.getIncomeCategoryItems(year, categorySlug)
   return rows.map((r) => ({ name: r.name, value: toBillions(r.value) }))
 }

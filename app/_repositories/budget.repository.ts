@@ -8,7 +8,7 @@
 
 import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm'
 
-import db from '@/app/_db/client'
+import { db } from '@/app/_db/client'
 import {
   budgetFacts,
   categories,
@@ -23,10 +23,7 @@ import {
 // ─── Shared filters ──────────────────────────────────────────────────────
 
 /** SR-scope funding sources: 1 (základní), 4 (kryté nároky), 5 (překročení) or NULL (older data). */
-const srScopeFilter = or(
-  inArray(budgetFacts.fundingSourceCode, ['1', '4', '5']),
-  isNull(budgetFacts.fundingSourceCode),
-)
+const srScopeFilter = or(inArray(budgetFacts.fundingSourceCode, ['1', '4', '5']), isNull(budgetFacts.fundingSourceCode))
 
 /** Restricts to rows where cash execution actually happened. */
 const hasActualFilter = isNotNull(budgetFacts.valueActual)
@@ -100,10 +97,7 @@ function classifyIncomeItem(itemCode: string): string {
 
 /** All fiscal years present in budget_facts, newest first. */
 export async function listYears(): Promise<number[]> {
-  const rows = await db
-    .selectDistinct({ year: budgetFacts.fiscalYear })
-    .from(budgetFacts)
-    .orderBy(desc(budgetFacts.fiscalYear))
+  const rows = await db.selectDistinct({ year: budgetFacts.fiscalYear }).from(budgetFacts).orderBy(desc(budgetFacts.fiscalYear))
   return rows.map((r) => r.year)
 }
 
@@ -167,10 +161,7 @@ export async function getExpenseCategoriesForYear(year: number): Promise<Expense
     .innerJoin(categoryParagraphMap, eq(categoryParagraphMap.paragraphId, budgetFacts.paragraphId))
     .innerJoin(categories, eq(categories.id, categoryParagraphMap.categoryId))
     .innerJoin(functionalParagraphs, eq(functionalParagraphs.id, budgetFacts.paragraphId))
-    .innerJoin(
-      functionalSubdivisions,
-      eq(functionalSubdivisions.id, functionalParagraphs.subdivisionId),
-    )
+    .innerJoin(functionalSubdivisions, eq(functionalSubdivisions.id, functionalParagraphs.subdivisionId))
     .innerJoin(economicItems, eq(economicItems.id, budgetFacts.itemId))
     .innerJoin(economicGroups, eq(economicGroups.id, economicItems.groupId))
     .innerJoin(economicClasses, eq(economicClasses.id, economicGroups.classId))
@@ -214,14 +205,7 @@ export async function getIncomeCategoriesForYear(year: number): Promise<IncomeCa
     .innerJoin(economicItems, eq(economicItems.id, budgetFacts.itemId))
     .innerJoin(economicGroups, eq(economicGroups.id, economicItems.groupId))
     .innerJoin(economicClasses, eq(economicClasses.id, economicGroups.classId))
-    .where(
-      and(
-        eq(budgetFacts.fiscalYear, year),
-        hasActualFilter,
-        srScopeFilter,
-        inArray(economicClasses.code, ['1', '2', '3', '4']),
-      ),
-    )
+    .where(and(eq(budgetFacts.fiscalYear, year), hasActualFilter, srScopeFilter, inArray(economicClasses.code, ['1', '2', '3', '4'])))
     .groupBy(economicItems.code)
 
   // Bucket items into UI categories with running count of items per bucket
@@ -242,10 +226,7 @@ export async function getIncomeCategoriesForYear(year: number): Promise<IncomeCa
  * Returns each functional subdivision (3-digit code in vyhláška) reachable from
  * the category's paragraph mapping with non-zero actual value, sorted DESC.
  */
-export async function getExpenseCategoryPododdily(
-  year: number,
-  categorySlug: string,
-): Promise<CategorySubdivisionRow[]> {
+export async function getExpenseCategoryPododdily(year: number, categorySlug: string): Promise<CategorySubdivisionRow[]> {
   const rows = await db
     .select({
       name: functionalSubdivisions.nameCs,
@@ -255,10 +236,7 @@ export async function getExpenseCategoryPododdily(
     .innerJoin(categoryParagraphMap, eq(categoryParagraphMap.paragraphId, budgetFacts.paragraphId))
     .innerJoin(categories, eq(categories.id, categoryParagraphMap.categoryId))
     .innerJoin(functionalParagraphs, eq(functionalParagraphs.id, budgetFacts.paragraphId))
-    .innerJoin(
-      functionalSubdivisions,
-      eq(functionalSubdivisions.id, functionalParagraphs.subdivisionId),
-    )
+    .innerJoin(functionalSubdivisions, eq(functionalSubdivisions.id, functionalParagraphs.subdivisionId))
     .innerJoin(economicItems, eq(economicItems.id, budgetFacts.itemId))
     .innerJoin(economicGroups, eq(economicGroups.id, economicItems.groupId))
     .innerJoin(economicClasses, eq(economicClasses.id, economicGroups.classId))
@@ -283,10 +261,7 @@ export async function getExpenseCategoryPododdily(
  * with non-zero actual value, sorted DESC. Income categories don't have a
  * functional dimension, so the drill-down is along druhové třídění.
  */
-export async function getIncomeCategoryItems(
-  year: number,
-  categorySlug: string,
-): Promise<CategorySubdivisionRow[]> {
+export async function getIncomeCategoryItems(year: number, categorySlug: string): Promise<CategorySubdivisionRow[]> {
   const rows = await db
     .select({
       itemCode: economicItems.code,
@@ -297,14 +272,7 @@ export async function getIncomeCategoryItems(
     .innerJoin(economicItems, eq(economicItems.id, budgetFacts.itemId))
     .innerJoin(economicGroups, eq(economicGroups.id, economicItems.groupId))
     .innerJoin(economicClasses, eq(economicClasses.id, economicGroups.classId))
-    .where(
-      and(
-        eq(budgetFacts.fiscalYear, year),
-        hasActualFilter,
-        srScopeFilter,
-        inArray(economicClasses.code, ['1', '2', '3', '4']),
-      ),
-    )
+    .where(and(eq(budgetFacts.fiscalYear, year), hasActualFilter, srScopeFilter, inArray(economicClasses.code, ['1', '2', '3', '4'])))
     .groupBy(economicItems.code, economicItems.nameCs)
 
   return rows

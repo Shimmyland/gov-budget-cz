@@ -19,12 +19,12 @@ chapters ← chapter_org_units ← budget_facts → economic_items
 
 Tabulka faktů obsahuje pouze cizí klíče a hodnotu — žádné popisné texty. Ty jsou výhradně v dimenzích. Díky tomu lze data efektivně agregovat libovolným řezem:
 
-| dotaz | GROUP BY |
-|---|---|
-| Kolik stát vydal na vzdělávání? | `functional_paragraphs` → `categories` |
-| Kolik vydalo MŠMT celkem? | `chapter_org_units` → `chapters` |
-| Jak rostly platy ve státní správě? | `economic_items.code = '5011'` přes roky |
-| Kolik dává každé ministerstvo na obranu? | `chapters` × `functional_paragraphs` |
+| dotaz                                    | GROUP BY                                 |
+| ---------------------------------------- | ---------------------------------------- |
+| Kolik stát vydal na vzdělávání?          | `functional_paragraphs` → `categories`   |
+| Kolik vydalo MŠMT celkem?                | `chapter_org_units` → `chapters`         |
+| Jak rostly platy ve státní správě?       | `economic_items.code = '5011'` přes roky |
+| Kolik dává každé ministerstvo na obranu? | `chapters` × `functional_paragraphs`     |
 
 ### Jeden řádek rozpočtu
 
@@ -97,6 +97,7 @@ Každá tabulka má `slug` jako klíč do JSON slovníků. Cron periodicky propi
 pod sekci `classifications`; anglické překlady se doplňují ručně nebo importem z Eurostatu.
 
 Anglické názvy COFOG kódů jsou dostupné z těchto oficiálních zdrojů (ke stažení jako Excel/CSV):
+
 - **Eurostat RAMON** — Reference And Management Of Nomenclatures; hledej `eurostat RAMON COFOG classification`
 - **UN Statistics Division** — COFOG je původně standard OSN; hledej `UN COFOG classification functions of government`
 
@@ -181,7 +182,8 @@ CREATE TABLE economic_items (
 
 Jeden řádek = jeden plně kvalifikovaný MIS-RIS záznam — kombinace 10 dimenzí
 (rok, měsíc, OSS, paragraf, položka, podkladové, nástrojové, doplňkové, programové, účelové)
-+ 5 rozpočtových stavů side-by-side jako NULLable sloupce.
+
+- 5 rozpočtových stavů side-by-side jako NULLable sloupce.
 
 > **Historická poznámka:** Do migrace `0020` měla tabulka design "1 řádek per (rok, OSS, paragraf, položka)
 > × 2 (schválený vs. skutečnost flag `is_approved`)". Refactor v migraci `0020` přešel na variantu A
@@ -225,15 +227,16 @@ CREATE TABLE budget_facts (
 
 Každý řádek `budget_facts` může mít až 5 různých Kč hodnot vedle sebe. Každá zachycuje stejný (rok, OSS, paragraf, položka, …) tuple, ale **v jiné fázi rozpočtového cyklu**.
 
-| Sloupec | MIS-RIS | Český název | Co to znamená | Příklad pro 2024 výdaje SR celkem |
-|---|---|---|---|---|
-| `value_approved` | `ZU_ROZSCH` | **Schválený rozpočet** | Co Sněmovna podepsala v zákoně o SR (před začátkem roku) | 2 222 mld |
-| `value_amended` | `ZU_ROZPZM` | **Rozpočet po změnách** | Po novelách zákona + rozpočtových opatřeních v průběhu roku | 2 242 mld |
-| `value_final` | `ZU_KROZP` | **Konečný rozpočet** | Po změnách **+ zapojení nároků z minulých let (NNV)** = maximum, co OSS smí utratit | 2 401 mld |
-| `value_actual` | `ZU_ROZKZ` | **Skutečnost** | Reálné cash plnění za rok | 2 234 mld |
-| `value_obligation` | `ZU_OBLIG` | **Obligace** | Podepsané závazky, dosud nezaplacené (forward-looking) | — |
+| Sloupec            | MIS-RIS     | Český název             | Co to znamená                                                                       | Příklad pro 2024 výdaje SR celkem |
+| ------------------ | ----------- | ----------------------- | ----------------------------------------------------------------------------------- | --------------------------------- |
+| `value_approved`   | `ZU_ROZSCH` | **Schválený rozpočet**  | Co Sněmovna podepsala v zákoně o SR (před začátkem roku)                            | 2 222 mld                         |
+| `value_amended`    | `ZU_ROZPZM` | **Rozpočet po změnách** | Po novelách zákona + rozpočtových opatřeních v průběhu roku                         | 2 242 mld                         |
+| `value_final`      | `ZU_KROZP`  | **Konečný rozpočet**    | Po změnách **+ zapojení nároků z minulých let (NNV)** = maximum, co OSS smí utratit | 2 401 mld                         |
+| `value_actual`     | `ZU_ROZKZ`  | **Skutečnost**          | Reálné cash plnění za rok                                                           | 2 234 mld                         |
+| `value_obligation` | `ZU_OBLIG`  | **Obligace**            | Podepsané závazky, dosud nezaplacené (forward-looking)                              | —                                 |
 
 **Důležité technické poznámky:**
+
 - Všechny sloupce jsou **NULLable**. NULL = "tato hodnota není pro daný tuple v MIS-RIS přítomná" (např. paragraf nemá schválený rozpočet, ale měl by čerpání NNV → `value_approved IS NULL`, `value_actual IS NOT NULL`).
 - `value_final` pro **příjmové třídy (1–4) je vždy NULL** — NNV se týkají jen výdajů, MIS-RIS pro příjmy `ZU_KROZP` nevyplňuje.
 - Hodnoty mohou být záporné — ETL parser umí Czech "trailing minus" notation (`14822772561.30-` = −14.8 mld), což jsou typicky vratky a korekce.
@@ -242,26 +245,28 @@ Každý řádek `budget_facts` může mít až 5 různých Kč hodnot vedle sebe
 
 V současné UI vrstvě **bere repository jen dva**:
 
-| UI koncept | Sloupec | Význam |
-|---|---|---|
-| **"Plán"** (např. "rozpočet 2024 = schodek 282 mld") | `value_approved` | Co Sněmovna schválila |
-| **"Realita"** (např. "skutečnost 2024 = schodek 271.5 mld") | `value_actual` | Co se reálně utratilo |
+| UI koncept                                                  | Sloupec          | Význam                |
+| ----------------------------------------------------------- | ---------------- | --------------------- |
+| **"Plán"** (např. "rozpočet 2024 = schodek 282 mld")        | `value_approved` | Co Sněmovna schválila |
+| **"Realita"** (např. "skutečnost 2024 = schodek 271.5 mld") | `value_actual`   | Co se reálně utratilo |
 
 Sloupce `value_amended`, `value_final`, `value_obligation` jsou v DB **pro budoucí analytické use cases**, ale **aktuální app je nečte**. Příklady kdy bychom je teprve začali používat:
+
 - `value_amended` — pokud bychom chtěli ukázat "jak se rozpočet měnil v průběhu roku" (pro 2020/2021 covid roky to byl 10× nárůst — dramatická story).
 - `value_final` — pokud bychom chtěli ukázat "kolik kapitola/program mohl maximálně utratit" vs. kolik utratil (poukáže na velikost NNV bufferů).
 - `value_obligation` — forward-looking analýza fiscal commitments pro investory / credit rating.
 
 ### Které dimenze reálně používá aplikace?
 
-| UI vrstva | Dimenze | Sloupec |
-|---|---|---|
-| 11 výdajových kategorií | paragraph (přes `category_paragraph_map`) | `paragraph_id` FK |
-| 6 příjmových kategorií | položka (regex pattern v repository) | `item_id` FK |
-| Kapitoly (sekundární pohled) | kapitola přes OSS | `org_unit_id` → `chapters` |
-| SR scope filter | podkladové třídění | `funding_source_code` |
+| UI vrstva                    | Dimenze                                   | Sloupec                    |
+| ---------------------------- | ----------------------------------------- | -------------------------- |
+| 11 výdajových kategorií      | paragraph (přes `category_paragraph_map`) | `paragraph_id` FK          |
+| 6 příjmových kategorií       | položka (regex pattern v repository)      | `item_id` FK               |
+| Kapitoly (sekundární pohled) | kapitola přes OSS                         | `org_unit_id` → `chapters` |
+| SR scope filter              | podkladové třídění                        | `funding_source_code`      |
 
 Ostatní inline dimenze (`nastroj_code`, `fund_code`, `eds_code`, `ucris_code`) jsou v DB **pro budoucí analytic use cases**, aplikace na ně dnes nedotazuje:
+
 - `nastroj_code` — EU/FM identifikace pro "po očištění" metodiku schodku.
 - `fund_code` — topické cross-cuts (Ukrajina, covid, povodně).
 - `eds_code` — drill-down do konkrétních programů (Modernizace ZŠ, NPO komponenty).
@@ -328,7 +333,7 @@ GROUP BY bf.fiscal_year WITH DATA;
 
 ### Které schodky NEJSOU v MV materializované
 
-Pouze `deficit_approved` a `deficit_actual` — protože jen ty UI reálně zobrazuje. Pokud budeš chtít *po změnách* schodek nebo *konečný*, spočítáš si je ad-hoc:
+Pouze `deficit_approved` a `deficit_actual` — protože jen ty UI reálně zobrazuje. Pokud budeš chtít _po změnách_ schodek nebo _konečný_, spočítáš si je ad-hoc:
 
 ```sql
 -- Schodek po změnách (rozpočet po novelách):
@@ -340,17 +345,17 @@ SELECT expenditure_amended - revenue_amended FROM fiscal_year_totals WHERE fisca
 
 ### Validace proti MF SZÚ Sešit G Tabulka 1 (rok 2024)
 
-| Metrika | MF SZÚ (mld) | Náš MV (mld) | Diff |
-|---|---|---|---|
-| Příjmy schválené | 1940.0 | `revenue_approved` 1940.0 | **0** |
-| Příjmy po změnách | 1960.2 | `revenue_amended` 1960.2 | **0** |
-| Příjmy skutečnost | 1965.4 | `revenue_actual` 1962.5 | −2.9 |
-| Výdaje schválené | 2222.0 | `expenditure_approved` 2222.0 | **0** |
-| Výdaje po změnách | 2242.2 | `expenditure_amended` 2242.2 | **0** |
-| Výdaje konečný (po NNV) | 2403.9 | `expenditure_final` 2401.0 | −2.9 |
-| Výdaje skutečnost | 2236.8 | `expenditure_actual` 2234.0 | −2.8 |
-| **Schodek schválený** | **282.0** | `deficit_approved` 282.0 | **0** |
-| **Schodek skutečnost** | **271.4** | `deficit_actual` 271.5 | **+0.1** |
+| Metrika                 | MF SZÚ (mld) | Náš MV (mld)                  | Diff     |
+| ----------------------- | ------------ | ----------------------------- | -------- |
+| Příjmy schválené        | 1940.0       | `revenue_approved` 1940.0     | **0**    |
+| Příjmy po změnách       | 1960.2       | `revenue_amended` 1960.2      | **0**    |
+| Příjmy skutečnost       | 1965.4       | `revenue_actual` 1962.5       | −2.9     |
+| Výdaje schválené        | 2222.0       | `expenditure_approved` 2222.0 | **0**    |
+| Výdaje po změnách       | 2242.2       | `expenditure_amended` 2242.2  | **0**    |
+| Výdaje konečný (po NNV) | 2403.9       | `expenditure_final` 2401.0    | −2.9     |
+| Výdaje skutečnost       | 2236.8       | `expenditure_actual` 2234.0   | −2.8     |
+| **Schodek schválený**   | **282.0**    | `deficit_approved` 282.0      | **0**    |
+| **Schodek skutečnost**  | **271.4**    | `deficit_actual` 271.5        | **+0.1** |
 
 Schválené stavy sedí **na haléř**. Skutečnost má diff −2.8/−2.9 na obou stranách, ale tyto diffy se vyruší → **schodek sedí prakticky na 0.1 mld** (~0.04 %).
 
@@ -436,17 +441,17 @@ ORDER BY eu_spend DESC;
 
 ## Mapování na stávající TypeScript typy (MVP)
 
-| TypeScript (`types.ts`)     | DB                                             |
-|-----------------------------|------------------------------------------------|
-| `BudgetYear`                | `budget_facts.fiscal_year`                     |
-| `YearData.totalRevenue`     | `fiscal_year_totals.revenue_actual`            |
-| `YearData.totalExpenditure` | `fiscal_year_totals.expenditure_actual`        |
-| `YearData.deficit`          | `fiscal_year_totals.deficit_actual`            |
-| `PieSlice.name`             | `categories.slug`                              |
+| TypeScript (`types.ts`)     | DB                                                             |
+| --------------------------- | -------------------------------------------------------------- |
+| `BudgetYear`                | `budget_facts.fiscal_year`                                     |
+| `YearData.totalRevenue`     | `fiscal_year_totals.revenue_actual`                            |
+| `YearData.totalExpenditure` | `fiscal_year_totals.expenditure_actual`                        |
+| `YearData.deficit`          | `fiscal_year_totals.deficit_actual`                            |
+| `PieSlice.name`             | `categories.slug`                                              |
 | `PieSlice.value`            | `SUM(budget_facts.value_actual)` přes `category_paragraph_map` |
-| `PieSlice.mandatory`        | `categories.is_mandatory`                      |
-| `PieSlice.cofogCodes`       | `functional_paragraphs.code` přes `category_paragraph_map` |
-| `SubCategory.name`          | `categories.slug` kde `parent_id IS NOT NULL`  |
+| `PieSlice.mandatory`        | `categories.is_mandatory`                                      |
+| `PieSlice.cofogCodes`       | `functional_paragraphs.code` přes `category_paragraph_map`     |
+| `SubCategory.name`          | `categories.slug` kde `parent_id IS NOT NULL`                  |
 | `SubCategory.value`         | `SUM(budget_facts.value_actual)` přes `category_paragraph_map` |
 
 ---
@@ -455,23 +460,23 @@ ORDER BY eu_spend DESC;
 
 Schema zachycuje plnou granularitu MIS-RIS — 10 ze 12 dimenzí vyhlášky 412/2021 Sb. + 5 hodnotových stavů.
 
-| Dimenze | V `budget_facts` | MIS-RIS sloupec |
-|---|---|---|
-| Rok | `fiscal_year SMALLINT` | `0FISCPER[0:4]` |
-| Měsíc | `fiscal_month SMALLINT` | `0FISCPER[4:7]` |
-| #1 Odpovědnostní (OSS → kapitola) | `org_unit_id` (NOT NULL) → `chapter_org_units` → `chapters` | `ZC_UCJED` + `0FM_AREA` |
-| #2 Druhové (položka) | `item_id` → `economic_items` | `ZCMMT_ITM` |
-| #3 Odvětvové (paragraf) | `paragraph_id` → `functional_paragraphs` | `0FUNC_AREA[0:4]` (income = placeholder `0000`) |
-| #5 Podkladové (zdroj) | `funding_source_code CHAR(1)` | `ZC_ZDROJA` (2024+ only, NULL pro 2020–2023) |
-| #7 Nástrojové (EU/FM/NPO/SZP) | `nastroj_code VARCHAR(20)` | `ZC_NASTRJ` |
-| #8 Doplňkové (účelově sledovaný celek) | `fund_code VARCHAR(20)` | `ZC_FUND` |
-| #9 Programové (EDS/SMVS) | `eds_code VARCHAR(20)` | `ZC_EDS` |
-| #10 Účelové (purpose) | `ucris_code VARCHAR(20)` | `ZC_UCRIS` |
-| Hodnota — schválený | `value_approved NUMERIC(14,2)` | `ZU_ROZSCH` |
-| Hodnota — po změnách | `value_amended NUMERIC(14,2)` | `ZU_ROZPZM` |
-| Hodnota — konečný (po NNV) | `value_final NUMERIC(14,2)` | `ZU_KROZP` |
-| Hodnota — skutečnost | `value_actual NUMERIC(14,2)` | `ZU_ROZKZ` |
-| Hodnota — obligace | `value_obligation NUMERIC(14,2)` | `ZU_OBLIG` |
+| Dimenze                                | V `budget_facts`                                            | MIS-RIS sloupec                                 |
+| -------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| Rok                                    | `fiscal_year SMALLINT`                                      | `0FISCPER[0:4]`                                 |
+| Měsíc                                  | `fiscal_month SMALLINT`                                     | `0FISCPER[4:7]`                                 |
+| #1 Odpovědnostní (OSS → kapitola)      | `org_unit_id` (NOT NULL) → `chapter_org_units` → `chapters` | `ZC_UCJED` + `0FM_AREA`                         |
+| #2 Druhové (položka)                   | `item_id` → `economic_items`                                | `ZCMMT_ITM`                                     |
+| #3 Odvětvové (paragraf)                | `paragraph_id` → `functional_paragraphs`                    | `0FUNC_AREA[0:4]` (income = placeholder `0000`) |
+| #5 Podkladové (zdroj)                  | `funding_source_code CHAR(1)`                               | `ZC_ZDROJA` (2024+ only, NULL pro 2020–2023)    |
+| #7 Nástrojové (EU/FM/NPO/SZP)          | `nastroj_code VARCHAR(20)`                                  | `ZC_NASTRJ`                                     |
+| #8 Doplňkové (účelově sledovaný celek) | `fund_code VARCHAR(20)`                                     | `ZC_FUND`                                       |
+| #9 Programové (EDS/SMVS)               | `eds_code VARCHAR(20)`                                      | `ZC_EDS`                                        |
+| #10 Účelové (purpose)                  | `ucris_code VARCHAR(20)`                                    | `ZC_UCRIS`                                      |
+| Hodnota — schválený                    | `value_approved NUMERIC(14,2)`                              | `ZU_ROZSCH`                                     |
+| Hodnota — po změnách                   | `value_amended NUMERIC(14,2)`                               | `ZU_ROZPZM`                                     |
+| Hodnota — konečný (po NNV)             | `value_final NUMERIC(14,2)`                                 | `ZU_KROZP`                                      |
+| Hodnota — skutečnost                   | `value_actual NUMERIC(14,2)`                                | `ZU_ROZKZ`                                      |
+| Hodnota — obligace                     | `value_obligation NUMERIC(14,2)`                            | `ZU_OBLIG`                                      |
 
 **Dimenze ze vyhlášky které nezachycujeme:** #4 Konsolidační (neaplikovatelné na SR-only data), #6 Prostorové (tuzemsko/zahraničí; pro SR málo variace), #11 Strukturní, #12 Transferové. Lze přidat v budoucí migraci, pokud vznikne use case.
 

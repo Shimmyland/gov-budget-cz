@@ -1,16 +1,12 @@
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale, type Locale } from '../dictionaries'
 import { YEARS, parseYear } from '@/app/lib/years'
-import { getBudgetYear, getBudgetYears } from '@/app/_services/budgetService'
+import { getBudgetYear, getBudgetYears } from '@/app/_services/budget.service'
 import { ChartCard } from '@/app/components/ChartCard'
 import dynamic from 'next/dynamic'
 
-const SubcategoryBarChart = dynamic(() =>
-  import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })),
-)
-const CategoryTrendChart = dynamic(() =>
-  import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })),
-)
+const SubcategoryBarChart = dynamic(() => import('@/app/components/BarChart').then((m) => ({ default: m.BarChart })))
+const CategoryTrendChart = dynamic(() => import('@/app/components/AreaTrendChart').then((m) => ({ default: m.AreaTrendChart })))
 import { CategoryList } from '@/app/components/CategoryList'
 import { translateCategories, formatBillions } from '@/app/lib/format'
 import { buildColorMap, GREEN_PALETTE, INCOME_COLOR_DARK, INCOME_COLOR_LIGHT } from '@/app/lib/palette'
@@ -65,16 +61,12 @@ export default async function IncomesPage({ params, searchParams }: PageProps<'/
       </div>
 
       {/* Charts — bar 60%, area trend 40% */}
-      <div className="grid gap-8 grid-chart">
+      <div className="grid-chart grid gap-8">
         <ChartCard title={i.barTitle} subtitle={`${year}`} subtitleNote={dict.chart.chartUnit}>
           <SubcategoryBarChart data={revenuesWithMeta} unit={dict.chart.unit} locale={lang} />
         </ChartCard>
 
-        <ChartCard
-          title={dict.chart.revenue}
-          subtitle={`${trendData[0]?.year}–${year}`}
-          subtitleNote={dict.chart.chartUnit}
-        >
+        <ChartCard title={dict.chart.revenue} subtitle={`${trendData[0]?.year}–${year}`} subtitleNote={dict.chart.chartUnit}>
           <CategoryTrendChart
             data={trendData}
             series={[{ dataKey: 'value', name: dict.chart.revenue, colorDark: INCOME_COLOR_DARK, colorLight: INCOME_COLOR_LIGHT }]}

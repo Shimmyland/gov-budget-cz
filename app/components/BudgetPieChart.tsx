@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useMemo, memo } from 'react'
-import { useContainerWidth } from '@/app/lib/hooks/useContainerWidth'
+import { useContainerWidth } from '@/app/lib/hooks/use-container-width'
 import Link from 'next/link'
 import { PieChart, Pie as PieBase, Tooltip, Sector } from 'recharts'
 import { ChartTooltip } from '@/app/components/ChartTooltip'
-import type { PieSlice } from '@/lib/types'
+import type { PieSlice } from '@/app/lib/types'
 import { type PaletteConfig, GREEN_PALETTE, RED_PALETTE, generateShades } from '@/app/lib/palette'
 import { groupWithOthers } from '@/app/lib/format'
 
@@ -45,12 +45,14 @@ function PieTooltip({
   if (!item) return null
   return (
     <ChartTooltip
-      entries={[{
-        color: item.payload.fill,
-        name: item.name,
-        value: item.value,
-        ...(item.payload.percent !== undefined && { percent: item.payload.percent }),
-      }]}
+      entries={[
+        {
+          color: item.payload.fill,
+          name: item.name,
+          value: item.value,
+          ...(item.payload.percent !== undefined && { percent: item.payload.percent }),
+        },
+      ]}
       unit={unit ?? ''}
       locale={locale ?? 'cs'}
     />
@@ -96,15 +98,24 @@ function PieLabel({ cx, cy, midAngle, outerRadius, name, fill, index, activeInde
   )
 }
 
-export const BudgetPieChart = memo(function BudgetPieChart({ data, title, year, unit, locale, palette = GREEN_PALETTE, href, linkLabel, maxVisible, othersLabel }: BudgetPieChartProps) {
+export const BudgetPieChart = memo(function BudgetPieChart({
+  data,
+  title,
+  year,
+  unit,
+  locale,
+  palette = GREEN_PALETTE,
+  href,
+  linkLabel,
+  maxVisible,
+  othersLabel,
+}: BudgetPieChartProps) {
   const { containerRef, width } = useContainerWidth()
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
 
   const coloredData = useMemo(() => {
     const sorted =
-      maxVisible != null
-        ? groupWithOthers(data, maxVisible, othersLabel ?? 'Ostatní')
-        : [...data].sort((a, b) => b.value - a.value)
+      maxVisible != null ? groupWithOthers(data, maxVisible, othersLabel ?? 'Ostatní') : [...data].sort((a, b) => b.value - a.value)
     const maxValue = sorted[0]?.value ?? 1
     const total = sorted.reduce((sum, s) => sum + s.value, 0)
     const shades = generateShades(sorted.length, palette)

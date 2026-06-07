@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
-import { getBudgetYear, getAvailableYears } from '@/app/_services/budgetService'
-import type { BudgetYear } from '@/lib/types'
+import { getBudgetYear, getAvailableYears } from '@/app/_services/budget.service'
+import type { BudgetYear } from '@/app/lib/types'
 
 export async function GET(request: NextRequest) {
   const yearParam = request.nextUrl.searchParams.get('year')

@@ -15,79 +15,48 @@ import { join } from 'node:path'
 
 import AdmZip from 'adm-zip'
 
+import { MonitorClientError } from '@/app/lib/errors'
+import type { MonitorPackage } from '@/app/lib/types'
+
 const MONITOR_BASE_URL = 'https://monitor.statnipokladna.gov.cz/data/extrakty/csv/FinOSS'
 // Project-local cache directory. Resolved against process.cwd() so it lives
 // inside the repo (under .cache/etl) instead of system /tmp. Gitignored.
 const DEFAULT_CACHE_DIR = join(process.cwd(), '.cache', 'etl')
 
-export interface MonitorPackage {
-  year: number
-  month: number // 1-12
-}
-
-export interface ExtractedPackage {
+type ExtractedPackage = {
   misRisCsv: Buffer
   zuMisRisCsv: Buffer | null
   pu3241Csv: Buffer | null
 }
 
-export class MonitorClientError extends Error {
-  constructor(
-    public readonly status: number | null,
-    message: string,
-  ) {
-    super(message)
-    this.name = 'MonitorClientError'
-  }
-}
-
-function formatPackageId(pkg: MonitorPackage): string {
-  const monthPadded = String(pkg.month).padStart(2, '0')
-  return `${pkg.year}_${monthPadded}`
-}
-
-function buildUrl(pkg: MonitorPackage): string {
-  return `${MONITOR_BASE_URL}/${formatPackageId(pkg)}_Data_CSUIS_MISRIS.zip`
-}
-
-function cachePath(pkg: MonitorPackage, cacheDir: string): string {
-  return join(cacheDir, `${formatPackageId(pkg)}_Data_CSUIS_MISRIS.zip`)
-}
-
-export interface DownloadOptions {
+type DownloadOptions = {
   cacheDir?: string
   forceRefresh?: boolean
 }
 
-/** Download a MIS-RIS ZIP package. Returns the raw ZIP buffer. */
-export async function downloadPackage(
-  pkg: MonitorPackage,
-  opts: DownloadOptions = {},
-): Promise<Buffer> {
+async function downloadPackage(pkg: MonitorPackage, opts: DownloadOptions = {}): Promise<Buffer> {
   const cacheDir = opts.cacheDir ?? DEFAULT_CACHE_DIR
   if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true })
 
-  const path = cachePath(pkg, cacheDir)
-  if (!opts.forceRefresh && existsSync(path)) {
-    return readFileSync(path)
+  const id = `${pkg.year}_${String(pkg.month).padStart(2, '0')}`
+  const filePath = join(cacheDir, `${id}_Data_CSUIS_MISRIS.zip`)
+
+  if (!opts.forceRefresh && existsSync(filePath)) {
+    return readFileSync(filePath)
   }
 
-  const url = buildUrl(pkg)
+  const url = `${MONITOR_BASE_URL}/${id}_Data_CSUIS_MISRIS.zip`
   const res = await fetch(url, { redirect: 'follow' })
   if (!res.ok) {
-    throw new MonitorClientError(
-      res.status,
-      `Failed to download ${url}: ${res.status} ${res.statusText}`,
-    )
+    throw new MonitorClientError(res.status, `Failed to download ${url}: ${res.status} ${res.statusText}`)
   }
 
   const buf = Buffer.from(await res.arrayBuffer())
-  writeFileSync(path, buf)
+  writeFileSync(filePath, buf)
   return buf
 }
 
-/** Extract the three CSV files from a MIS-RIS ZIP package. */
-export function extractPackage(zipBuffer: Buffer): ExtractedPackage {
+function extractPackage(zipBuffer: Buffer): ExtractedPackage {
   const zip = new AdmZip(zipBuffer)
   const entries = zip.getEntries()
 
@@ -113,11 +82,7 @@ export function extractPackage(zipBuffer: Buffer): ExtractedPackage {
   return { misRisCsv, zuMisRisCsv, pu3241Csv }
 }
 
-/** Convenience: download + extract in one call. */
-export async function fetchAndExtract(
-  pkg: MonitorPackage,
-  opts: DownloadOptions = {},
-): Promise<ExtractedPackage> {
+export async function fetchAndExtract(pkg: MonitorPackage, opts: DownloadOptions = {}): Promise<ExtractedPackage> {
   const zipBuffer = await downloadPackage(pkg, opts)
   return extractPackage(zipBuffer)
 }

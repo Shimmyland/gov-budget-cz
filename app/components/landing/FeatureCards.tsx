@@ -63,12 +63,10 @@ export function FeatureCards({ locale, dict }: FeatureCardsProps) {
                 <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">{title}</span>
               </div>
               {index === 0 && (
-                <span className="text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs font-medium">
-                  {dict.featureStartBadge}
-                </span>
+                <span className="text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs font-medium">{dict.featureStartBadge}</span>
               )}
             </div>
-            <p className="text-foreground text-base font-semibold leading-snug">{question}</p>
+            <p className="text-foreground text-base leading-snug font-semibold">{question}</p>
             <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
             <span className="text-primary mt-auto text-sm">{cta}</span>
           </Link>

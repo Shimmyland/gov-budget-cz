@@ -1,5 +1,5 @@
 {
-  "id": "f7869917-23b0-4175-888c-a5cf4598d963",
+  "id": "9fc56073-8317-44d4-a380-3d84e830be42",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -20,11 +20,17 @@
           "primaryKey": false,
           "notNull": true
         },
+        "fiscal_month": {
+          "name": "fiscal_month",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
         "org_unit_id": {
           "name": "org_unit_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "paragraph_id": {
           "name": "paragraph_id",
@@ -38,18 +44,65 @@
           "primaryKey": false,
           "notNull": true
         },
-        "value": {
-          "name": "value",
+        "funding_source_code": {
+          "name": "funding_source_code",
+          "type": "char(1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nastroj_code": {
+          "name": "nastroj_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fund_code": {
+          "name": "fund_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eds_code": {
+          "name": "eds_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ucris_code": {
+          "name": "ucris_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value_approved": {
+          "name": "value_approved",
           "type": "numeric(14, 2)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "is_approved": {
-          "name": "is_approved",
-          "type": "boolean",
+        "value_amended": {
+          "name": "value_amended",
+          "type": "numeric(14, 2)",
           "primaryKey": false,
-          "notNull": true,
-          "default": true
+          "notNull": false
+        },
+        "value_final": {
+          "name": "value_final",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value_actual": {
+          "name": "value_actual",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value_obligation": {
+          "name": "value_obligation",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -58,6 +111,27 @@
           "columns": [
             {
               "expression": "fiscal_year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_facts_year_month": {
+          "name": "idx_facts_year_month",
+          "columns": [
+            {
+              "expression": "fiscal_year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fiscal_month",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -133,6 +207,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "idx_facts_nastroj": {
+          "name": "idx_facts_nastroj",
+          "columns": [
+            {
+              "expression": "nastroj_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -140,12 +229,8 @@
           "name": "budget_facts_org_unit_id_chapter_org_units_id_fk",
           "tableFrom": "budget_facts",
           "tableTo": "chapter_org_units",
-          "columnsFrom": [
-            "org_unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["org_unit_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -153,12 +238,8 @@
           "name": "budget_facts_paragraph_id_functional_paragraphs_id_fk",
           "tableFrom": "budget_facts",
           "tableTo": "functional_paragraphs",
-          "columnsFrom": [
-            "paragraph_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["paragraph_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -166,12 +247,8 @@
           "name": "budget_facts_item_id_economic_items_id_fk",
           "tableFrom": "budget_facts",
           "tableTo": "economic_items",
-          "columnsFrom": [
-            "item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -225,12 +302,8 @@
           "name": "categories_parent_id_categories_id_fk",
           "tableFrom": "categories",
           "tableTo": "categories",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -240,9 +313,7 @@
         "categories_slug_unique": {
           "name": "categories_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -272,12 +343,8 @@
           "name": "category_paragraph_map_category_id_categories_id_fk",
           "tableFrom": "category_paragraph_map",
           "tableTo": "categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -285,12 +352,8 @@
           "name": "category_paragraph_map_paragraph_id_functional_paragraphs_id_fk",
           "tableFrom": "category_paragraph_map",
           "tableTo": "functional_paragraphs",
-          "columnsFrom": [
-            "paragraph_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["paragraph_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -298,10 +361,7 @@
       "compositePrimaryKeys": {
         "category_paragraph_map_category_id_paragraph_id_pk": {
           "name": "category_paragraph_map_category_id_paragraph_id_pk",
-          "columns": [
-            "category_id",
-            "paragraph_id"
-          ]
+          "columns": ["category_id", "paragraph_id"]
         }
       },
       "uniqueConstraints": {},
@@ -344,12 +404,8 @@
           "name": "chapter_org_units_chapter_id_chapters_id_fk",
           "tableFrom": "chapter_org_units",
           "tableTo": "chapters",
-          "columnsFrom": [
-            "chapter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["chapter_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -359,10 +415,7 @@
         "chapter_org_units_chapterId_code_unique": {
           "name": "chapter_org_units_chapterId_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "chapter_id",
-            "code"
-          ]
+          "columns": ["chapter_id", "code"]
         }
       },
       "policies": {},
@@ -381,7 +434,7 @@
         },
         "code": {
           "name": "code",
-          "type": "varchar(10)",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
@@ -399,16 +452,12 @@
         "chapters_code_unique": {
           "name": "chapters_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "chapters_slug_unique": {
           "name": "chapters_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -451,16 +500,12 @@
         "economic_classes_code_unique": {
           "name": "economic_classes_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "economic_classes_slug_unique": {
           "name": "economic_classes_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -508,12 +553,8 @@
           "name": "economic_groups_class_id_economic_classes_id_fk",
           "tableFrom": "economic_groups",
           "tableTo": "economic_classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -523,16 +564,12 @@
         "economic_groups_code_unique": {
           "name": "economic_groups_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "economic_groups_slug_unique": {
           "name": "economic_groups_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -580,12 +617,8 @@
           "name": "economic_items_group_id_economic_groups_id_fk",
           "tableFrom": "economic_items",
           "tableTo": "economic_groups",
-          "columnsFrom": [
-            "group_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["group_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -595,16 +628,12 @@
         "economic_items_code_unique": {
           "name": "economic_items_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "economic_items_slug_unique": {
           "name": "economic_items_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -647,16 +676,12 @@
         "functional_divisions_code_unique": {
           "name": "functional_divisions_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "functional_divisions_slug_unique": {
           "name": "functional_divisions_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -704,12 +729,8 @@
           "name": "functional_paragraphs_subdivision_id_functional_subdivisions_id_fk",
           "tableFrom": "functional_paragraphs",
           "tableTo": "functional_subdivisions",
-          "columnsFrom": [
-            "subdivision_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subdivision_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -719,16 +740,12 @@
         "functional_paragraphs_code_unique": {
           "name": "functional_paragraphs_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "functional_paragraphs_slug_unique": {
           "name": "functional_paragraphs_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -776,12 +793,8 @@
           "name": "functional_subdivisions_division_id_functional_divisions_id_fk",
           "tableFrom": "functional_subdivisions",
           "tableTo": "functional_divisions",
-          "columnsFrom": [
-            "division_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["division_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -791,16 +804,12 @@
         "functional_subdivisions_code_unique": {
           "name": "functional_subdivisions_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "functional_subdivisions_slug_unique": {
           "name": "functional_subdivisions_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -812,10 +821,7 @@
     "public.category_type": {
       "name": "category_type",
       "schema": "public",
-      "values": [
-        "expense",
-        "income"
-      ]
+      "values": ["expense", "income"]
     }
   },
   "schemas": {},

@@ -2,7 +2,8 @@ import Link from 'next/link'
 import type { Dictionary } from '@/app/[lang]/dictionaries'
 import type { Locale } from '@/app/[lang]/dictionaries'
 
-const btnPrimary = 'inline-flex cursor-pointer items-center justify-center rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all h-9 gap-1.5 px-3 bg-primary text-primary-foreground'
+const btnPrimary =
+  'inline-flex cursor-pointer items-center justify-center rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all h-9 gap-1.5 px-3 bg-primary text-primary-foreground'
 
 interface LandingFooterProps {
   locale: Locale
