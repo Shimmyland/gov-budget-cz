@@ -8,13 +8,10 @@
 //   - ZU-MIS-RIS_{YYYY}{MMM}.csv   (aggregate by ministry and SU indicator)
 //   - PU3241_05_{YYYY}{MMM}.csv    (filtered to one cross-cutting indicator)
 //
-// Downloads are cached on disk to avoid repeated network round-trips during dev.
-
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+// Downloads are cached on disk in dev to avoid repeated network round-trips.
+// In production the cache is skipped — Railway doesn't persist disk between deploys.
 
 import AdmZip from 'adm-zip'
-
 import { MonitorClientError } from '@/app/lib/errors'
 import type { MonitorPackage } from '@/app/lib/types'
 
@@ -31,27 +28,29 @@ type DownloadOptions = {
   forceRefresh?: boolean
 }
 
-async function downloadPackage(pkg: MonitorPackage, opts: DownloadOptions = {}): Promise<Buffer> {
-  // Resolved lazily (not at module level) to avoid Turbopack NFT tracing the whole project.
-  const cacheDir = opts.cacheDir ?? join(process.cwd(), '.cache', 'etl')
-  if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true })
-
-  const id = `${pkg.year}_${String(pkg.month).padStart(2, '0')}`
-  const filePath = join(cacheDir, `${id}_Data_CSUIS_MISRIS.zip`)
-
-  if (!opts.forceRefresh && existsSync(filePath)) {
-    return readFileSync(filePath)
-  }
-
-  const url = `${MONITOR_BASE_URL}/${id}_Data_CSUIS_MISRIS.zip`
+async function fetchZip(url: string): Promise<Buffer> {
   const res = await fetch(url, { redirect: 'follow' })
-  if (!res.ok) {
-    throw new MonitorClientError(res.status, `Failed to download ${url}: ${res.status} ${res.statusText}`)
+  if (!res.ok) throw new MonitorClientError(res.status, `Failed to download ${url}: ${res.status} ${res.statusText}`)
+  return Buffer.from(await res.arrayBuffer())
+}
+
+async function downloadPackage(pkg: MonitorPackage, opts: DownloadOptions = {}): Promise<Buffer> {
+  const id = `${pkg.year}_${String(pkg.month).padStart(2, '0')}`
+  const url = `${MONITOR_BASE_URL}/${id}_Data_CSUIS_MISRIS.zip`
+
+  if (process.env.NODE_ENV !== 'production' && !opts.forceRefresh) {
+    const { join } = await import('node:path')
+    const { existsSync, mkdirSync, readFileSync, writeFileSync } = await import('node:fs')
+    const cacheDir = opts.cacheDir ?? join(process.cwd(), '.cache', 'etl')
+    if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true })
+    const filePath = join(cacheDir, `${id}_Data_CSUIS_MISRIS.zip`)
+    if (existsSync(filePath)) return readFileSync(filePath)
+    const buf = await fetchZip(url)
+    writeFileSync(filePath, buf)
+    return buf
   }
 
-  const buf = Buffer.from(await res.arrayBuffer())
-  writeFileSync(filePath, buf)
-  return buf
+  return fetchZip(url)
 }
 
 function extractPackage(zipBuffer: Buffer): ExtractedPackage {
@@ -73,9 +72,7 @@ function extractPackage(zipBuffer: Buffer): ExtractedPackage {
     }
   }
 
-  if (!misRisCsv) {
-    throw new MonitorClientError(null, 'MIS-RIS CSV not found in ZIP archive')
-  }
+  if (!misRisCsv) throw new MonitorClientError(null, 'MIS-RIS CSV not found in ZIP archive')
 
   return { misRisCsv, zuMisRisCsv, pu3241Csv }
 }
