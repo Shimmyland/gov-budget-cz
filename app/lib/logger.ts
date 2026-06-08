@@ -1,28 +1,13 @@
-import { pino } from 'pino'
-import fs from 'fs'
+import pino from 'pino'
+import pretty from 'pino-pretty'
+import { createWriteStream } from 'node:fs'
 
-export const logger = pino({
-  transport: {
-    targets: [
-      {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
-        },
-      },
-      {
-        target: 'pino-pretty',
-        options: {
-          destination: '.log',
-          colorize: false,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
-        },
-      },
-    ],
-  },
-})
+const prettyOptions = { translateTime: 'SYS:standard', ignore: 'pid,hostname' }
 
-fs.appendFileSync('.log', '\n')
+export const logger = pino(
+  {},
+  pino.multistream([
+    { stream: pretty({ ...prettyOptions, colorize: true }) },
+    { stream: pretty({ ...prettyOptions, colorize: false, destination: createWriteStream('.log', { flags: 'a' }) }) },
+  ]),
+)
