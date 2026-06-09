@@ -40,8 +40,6 @@ export const db = drizzle(getDbClient(), { schema, casing: 'snake_case' })
 export async function initDatabase(): Promise<void> {
   try {
     await runMigrations()
-    await checkDatabaseConnection()
-
     logger.info('[startup] Database initialized')
   } catch (err) {
     logger.error({ err }, '[startup] Database initialization failed')
@@ -61,11 +59,6 @@ export async function runMigrations(): Promise<void> {
   } finally {
     await migrationClient.end()
   }
-}
-
-export async function checkDatabaseConnection(): Promise<void> {
-  await db.execute(sql`SELECT 1`)
-  logger.info('[startup] DB connectivity OK')
 }
 
 // Postgres advisory lock helper. Used to serialize ETL runs across multiple
