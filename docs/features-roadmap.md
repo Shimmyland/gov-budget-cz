@@ -88,7 +88,7 @@ Aktuální ETL stahuje měsíční CSV extrakt z Monitoru SP s ~3-měsíčním z
 
 ### Co to vyžaduje
 
-- REST klient pro Monitor API (existující `monitorClient.ts` rozšířit)
+- REST klient pro Monitor API (existující `app/_services/monitor.service.ts` rozšířit)
 - Cache layer (Redis nebo in-memory) — API má rate limity
 - API endpoint v Next.js app pro UI consumption
 
@@ -177,6 +177,6 @@ Odložena. Připravená data, čeká na UI design.
 
 ## Cross-reference
 
-Datový základ pro features 1, 3, 4, 5, 6 byl vybudován v migracích **0020 + 0021** (full MIS-RIS column load). Features lze přidávat **bez dalšího reseed ETL** — jen nové repository funkce + UI komponenty.
+Datový základ pro features 1, 3, 4, 5, 6 je součástí počátečního schématu (migrace **0000 + 0001** — plná MIS-RIS granularita). Features lze přidávat **bez dalšího reseed ETL** — jen nové repository funkce + UI komponenty.
 
 Pro feature 2 (subkategorie) připravený schema `categories.parent_id` od `0000_initial_schema`.

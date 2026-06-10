@@ -185,11 +185,11 @@ Jeden řádek = jeden plně kvalifikovaný MIS-RIS záznam — kombinace 10 dime
 
 - 5 rozpočtových stavů side-by-side jako NULLable sloupce.
 
-> **Historická poznámka:** Do migrace `0020` měla tabulka design "1 řádek per (rok, OSS, paragraf, položka)
-> × 2 (schválený vs. skutečnost flag `is_approved`)". Refactor v migraci `0020` přešel na variantu A
-> — jeden řádek per plný MIS-RIS tuple s 5 hodnotovými sloupci. Důvody: (a) `is_approved` zachycovala
-> jen 2 ze 4 rozpočtových stavů; (b) potřeba `nastroj_code` (EU/FM identifikace) vyžadovala přidání
-> nových dimenzí; (c) jednotná struktura je čistší pro analytické dotazy.
+> **Design rationale:** Starší alternativou byl design "1 řádek per (rok, OSS, paragraf, položka)
+> × 2 (schválený vs. skutečnost flag `is_approved`)". Tento projekt byl od počátku navržen s variantou A
+> — jeden řádek per plný MIS-RIS tuple s 5 hodnotovými sloupci. Důvody: (a) `is_approved` by zachycoval
+> jen 2 ze 4 rozpočtových stavů; (b) `nastroj_code` (EU/FM identifikace) a další dimenze vyžadují
+> plný tuple jako klíč; (c) jednotná struktura je čistší pro analytické dotazy.
 
 > **Proč zde není `chapter_id`:**
 > V reálných datech z IISSP má každý řádek vždy vyplněnou organizační složku státu (OSS).
@@ -303,7 +303,7 @@ CREATE TABLE category_paragraph_map (
 ## 6. Agregátní pohled na fiskální roky
 
 Materialized view `fiscal_year_totals` — refresh po každém seedu/updatu dat.
-Aktuální stav (migrace `0021`): **8 hodnotových sloupců** (revenue × 4 stavy, expenditure × 4 stavy) **+ 2 pre-computed schodky** (approved, actual). Všechny v SR scope.
+Aktuální stav (migrace `0001`): **8 hodnotových sloupců** (revenue × 4 stavy, expenditure × 4 stavy) **+ 2 pre-computed salda** (approved, actual). Všechny v SR scope.
 
 ```sql
 CREATE MATERIALIZED VIEW fiscal_year_totals AS
@@ -319,9 +319,9 @@ SELECT
   SUM(bf.value_amended)  FILTER (...) AS expenditure_amended,
   SUM(bf.value_final)    FILTER (...) AS expenditure_final,
   SUM(bf.value_actual)   FILTER (...) AS expenditure_actual,
-  -- Pre-computed schodky (jen ty 2 stavy které UI reálně zobrazuje)
-  expenditure_approved - revenue_approved AS deficit_approved,
-  expenditure_actual   - revenue_actual   AS deficit_actual
+  -- Pre-computed salda: revenue − expenditure (kladné = přebytek, záporné = schodek)
+  revenue_approved - expenditure_approved AS balance_approved,
+  revenue_actual   - expenditure_actual   AS balance_actual
 FROM budget_facts bf JOIN economic_items ... JOIN economic_groups ... JOIN economic_classes ...
 GROUP BY bf.fiscal_year WITH DATA;
 
@@ -331,16 +331,16 @@ GROUP BY bf.fiscal_year WITH DATA;
 
 **SR scope filter** baked do každé agregace: `funding_source_code IN ('1','4','5') OR IS NULL`. NULL pokrývá 2020–2023 MIS-RIS soubory, které tento sloupec nemají.
 
-### Které schodky NEJSOU v MV materializované
+### Která salda NEJSOU v MV materializovaná
 
-Pouze `deficit_approved` a `deficit_actual` — protože jen ty UI reálně zobrazuje. Pokud budeš chtít _po změnách_ schodek nebo _konečný_, spočítáš si je ad-hoc:
+Pouze `balance_approved` a `balance_actual` — protože jen ty UI reálně zobrazuje. Pokud budeš chtít saldo _po změnách_ nebo _konečné_, spočítáš si je ad-hoc:
 
 ```sql
--- Schodek po změnách (rozpočet po novelách):
-SELECT expenditure_amended - revenue_amended FROM fiscal_year_totals WHERE fiscal_year = 2024;
--- = 282 mld 2024 (změny v 2024 byly symetrické, schodek se nezměnil)
+-- Saldo po změnách (rozpočet po novelách):
+SELECT revenue_amended - expenditure_amended FROM fiscal_year_totals WHERE fiscal_year = 2024;
+-- = −282 mld 2024 (záporné = schodek; změny v 2024 byly symetrické, schodek se nezměnil)
 
--- "Konečný" schodek nelze smysluplně počítat — revenue_final je vždy NULL.
+-- "Konečné" saldo nelze smysluplně počítat — revenue_final je vždy NULL.
 ```
 
 ### Validace proti MF SZÚ Sešit G Tabulka 1 (rok 2024)
@@ -354,10 +354,10 @@ SELECT expenditure_amended - revenue_amended FROM fiscal_year_totals WHERE fisca
 | Výdaje po změnách       | 2242.2       | `expenditure_amended` 2242.2  | **0**    |
 | Výdaje konečný (po NNV) | 2403.9       | `expenditure_final` 2401.0    | −2.9     |
 | Výdaje skutečnost       | 2236.8       | `expenditure_actual` 2234.0   | −2.8     |
-| **Schodek schválený**   | **282.0**    | `deficit_approved` 282.0      | **0**    |
-| **Schodek skutečnost**  | **271.4**    | `deficit_actual` 271.5        | **+0.1** |
+| **Schodek schválený**   | **282.0**    | `balance_approved` −282.0     | **0**    |
+| **Schodek skutečnost**  | **271.4**    | `balance_actual` −271.5       | **+0.1** |
 
-Schválené stavy sedí **na haléř**. Skutečnost má diff −2.8/−2.9 na obou stranách, ale tyto diffy se vyruší → **schodek sedí prakticky na 0.1 mld** (~0.04 %).
+Schválené stavy sedí **na haléř**. Skutečnost má diff −2.8/−2.9 na obou stranách, ale tyto diffy se vyruší → **saldo (schodek) sedí prakticky na 0.1 mld** (~0.04 %).
 
 ---
 
@@ -390,8 +390,8 @@ CREATE INDEX idx_facts_nastroj     ON budget_facts(nastroj_code);
 
 ## Příklady dotazů
 
-> **Pozor:** od migrace `0020` se sumuje konkrétní hodnotový sloupec (`value_actual` pro skutečnost,
-> `value_approved` pro schválený, atd.) — ne obecný `bf.value`. Sloupec `value` byl odstraněn.
+> **Poznámka:** schema vždy pracuje s konkrétním hodnotovým sloupcem (`value_actual` pro skutečnost,
+> `value_approved` pro schválený, atd.) — obecný sloupec `bf.value` neexistuje.
 
 ```sql
 -- Veřejná app: skutečné výdaje per kategorie pro rok 2025
@@ -446,13 +446,13 @@ ORDER BY eu_spend DESC;
 | `BudgetYear`                | `budget_facts.fiscal_year`                                     |
 | `YearData.totalRevenue`     | `fiscal_year_totals.revenue_actual`                            |
 | `YearData.totalExpenditure` | `fiscal_year_totals.expenditure_actual`                        |
-| `YearData.deficit`          | `fiscal_year_totals.deficit_actual`                            |
+| `YearData.balance`          | `fiscal_year_totals.balance_actual`                            |
 | `PieSlice.name`             | `categories.slug`                                              |
 | `PieSlice.value`            | `SUM(budget_facts.value_actual)` přes `category_paragraph_map` |
 | `PieSlice.mandatory`        | `categories.is_mandatory`                                      |
 | `PieSlice.cofogCodes`       | `functional_paragraphs.code` přes `category_paragraph_map`     |
-| `SubCategory.name`          | `categories.slug` kde `parent_id IS NOT NULL`                  |
-| `SubCategory.value`         | `SUM(budget_facts.value_actual)` přes `category_paragraph_map` |
+| `SubCategory.name`          | funkční pododdíl (`functional_subdivisions.name_cs`) nebo `economic_items.name_cs` |
+| `SubCategory.value`         | `SUM(budget_facts.value_actual)` per pododdíl/položka          |
 
 ---
 
@@ -480,8 +480,8 @@ Schema zachycuje plnou granularitu MIS-RIS — 10 ze 12 dimenzí vyhlášky 412/
 
 **Dimenze ze vyhlášky které nezachycujeme:** #4 Konsolidační (neaplikovatelné na SR-only data), #6 Prostorové (tuzemsko/zahraničí; pro SR málo variace), #11 Strukturní, #12 Transferové. Lze přidat v budoucí migraci, pokud vznikne use case.
 
-### Refactor 0020 — proč jeden řádek per tuple, ne dva
+### Proč jeden řádek per tuple, ne dva
 
-Před `0020` ETL emitoval dva řádky per MIS-RIS záznam (jeden s `value=ZU_ROZSCH, is_approved=TRUE`, druhý s `value=ZU_ROZKZ, is_approved=FALSE`). Tento design **nemohl zachytit `ZU_ROZPZM` ani `ZU_KROZP`** — byl ztracen 50% obsahu MIS-RIS hodnot.
+Alternativní design "2 řádky per MIS-RIS záznam (jeden s `value=ZU_ROZSCH, is_approved=TRUE`, druhý s `value=ZU_ROZKZ, is_approved=FALSE`)" byl odmítnut: **nemohl zachytit `ZU_ROZPZM` ani `ZU_KROZP`** — byl by ztracen 50 % obsahu MIS-RIS hodnot.
 
-Nový design = jeden řádek per (rok, měsíc, OSS, paragraf, položka, dimenze) tuple, všech 5 hodnot side-by-side. ETL skipuje řádky kde všech 5 je 0. Důsledek: ~280k–400k řádků per rok (vs. ~300k v starém modelu — podobně, protože staré dvojnásobné dělení nahradilo retained granularity nových dimenzí).
+Výsledný design = jeden řádek per (rok, měsíc, OSS, paragraf, položka, dimenze) tuple, všech 5 hodnot side-by-side. ETL skipuje řádky kde všech 5 je 0. Důsledek: ~280k–400k řádků per rok.

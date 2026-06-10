@@ -32,11 +32,11 @@ Sociální péče (1 021 mld)
 
 ### Pilot na `socialProtection` proběhl bez problémů
 
-Migrace `0016` přidala 6 subkategorií pro Sociální péči s pravidlovým mapováním (`411_, 415_` → `pensions`, atd.). Hodnoty seděly. UX bylo příjemné.
+Bylo přidáno 6 subkategorií pro Sociální péči s pravidlovým mapováním (`411_, 415_` → `pensions`, atd.). Hodnoty seděly. UX bylo příjemné.
 
 ### Pilot na `education` odhalil zásadní data-shape problém
 
-Při migraci `0017` (Vzdělávání) se ukázalo, že státní rozpočet **nemá strukturu, kterou bychom intuitivně očekávali**:
+Při pilotu na Vzdělávání se ukázalo, že státní rozpočet **nemá strukturu, kterou bychom intuitivně očekávali**:
 
 ```
 329 "Ostatní činnost a nespecifikované výdaje"     224.6 mld  (73 % vzdělávání!)
@@ -64,7 +64,7 @@ Pro MVP:
 
 - Detail stránka kategorie → ukazuje úroveň 3 (paragrafy) přímo
 - Žádná "level 2" v mezi
-- Migrace pilotu (0016, 0017) byla rollback'nuta v migraci `0018`
+- Pilotní data subkategorií byla odstraněna (squashnutá do seed migrace `0002`)
 - Schema (`categories.parent_id`, `category_paragraph_map`) zůstává — připravené až bude úroveň 2 znovu na řadě
 
 ## Co znovu vyřešit, až bude MVP v produkci
@@ -79,14 +79,12 @@ Když přijde čas znovu zkusit úroveň 2:
 
 ## Co zůstalo v repozitáři po pilotním pokusu
 
-| Co                                                                  | Stav                                       |
-| ------------------------------------------------------------------- | ------------------------------------------ |
-| Migrace `0016` (socialProtection subkategorie)                      | Aplikovaná, data odstraněna migrací `0018` |
-| Migrace `0017` (education subkategorie)                             | Aplikovaná, data odstraněna migrací `0018` |
-| Migrace `0018` (DELETE FROM categories WHERE parent_id IS NOT NULL) | Aplikovaná                                 |
-| Schema `categories.parent_id`                                       | Zachované — připravené pro budoucí use     |
-| Schema `category_paragraph_map`                                     | Zachované                                  |
-| Tento dokument                                                      | Aktualizován jako future-feature concept   |
+| Co                                                           | Stav                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------- |
+| Pilotní data subkategorií (socialProtection, education)      | Squashnutá do seed migrace `0002`; tabulka `categories` je čistá (žádné řádky s `parent_id IS NOT NULL`) |
+| Schema `categories.parent_id`                                | Zachované — připravené pro budoucí use                        |
+| Schema `category_paragraph_map`                              | Zachované                                                     |
+| Tento dokument                                               | Aktualizován jako future-feature concept                      |
 
 ## Související dokumentace
 

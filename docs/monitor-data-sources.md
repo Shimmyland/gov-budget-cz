@@ -82,7 +82,7 @@ Výdaje filtrované na průřezový ukazatel 3241. Obsahuje položkové kódy.
 
 ### `MIS-RIS_*.csv` — všechny roky, ~226 MB
 
-Plná granularita — **všechny dimenze + 5 hodnotových stavů** vedle sebe. Toto je primární zdroj pro náš ETL (`app/_etl/misRisParser.ts`).
+Plná granularita — **všechny dimenze + 5 hodnotových stavů** vedle sebe. Toto je primární zdroj pro náš ETL (`app/_services/mis-ris-parser.service.ts`).
 
 | Sloupec      | Použití v ETL                                                  | DB sloupec                                    |
 | ------------ | -------------------------------------------------------------- | --------------------------------------------- |
@@ -109,7 +109,7 @@ Plná granularita — **všechny dimenze + 5 hodnotových stavů** vedle sebe. T
 
 > **2020–2023 soubory mají jen 16 sloupců** (chybí ZC_ZDROJA, ZC_NASTRJ, ZC_NAST37, ZC_FUND atd.). Parser je vyrobený robustně — chybějící optional sloupce → DB NULL.
 
-> **Czech accounting trailing minus**: hodnoty v MIS-RIS mohou mít minus na konci (`14822772561.30-` = −14.8 mld) místo na začátku. Toto jsou typicky vratky, korekce a opravy. ETL parser to umí — viz `parseDecimal` v `app/_etl/misRisParser.ts`. **Před migrací 0020 to neuměl** a takové hodnoty byly tichoušce konvertovány na 0, což přispívalo k diffu vs. MF Pokladní plnění.
+> **Czech accounting trailing minus**: hodnoty v MIS-RIS mohou mít minus na konci (`14822772561.30-` = −14.8 mld) místo na začátku. Toto jsou typicky vratky, korekce a opravy. ETL parser to umí — viz `parseDecimal` v `app/_services/mis-ris-parser.service.ts`.
 
 ---
 

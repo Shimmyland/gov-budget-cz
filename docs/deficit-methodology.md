@@ -2,7 +2,7 @@
 
 > Dokument popisuje, jak se v projektu gov-budget-cz počítá schodek státního rozpočtu, jak naše čísla
 > sedí s oficiálním MF reportingem, a jaké jsou známé reziduální rozdíly a limity.
-> Doprovází migrace `0020` a `0021`.
+> Doprovází migrace `0000` (schema) a `0001` (MV `fiscal_year_totals`).
 
 ---
 
@@ -34,11 +34,10 @@ chybu, ne dílčí filtr.
    inline (kapitola, paragraf, položka, funding source). Chyběly zejména nástrojové
    třídění (#7), programové (#9), doplňkové (#8) a účelové (#10).
 
-**Implementace** v migracích `0020` (refactor `budget_facts` na variantu A — jeden
-řádek per plně kvalifikovaný tuple, 5 hodnotových sloupců side-by-side, 4 nové
-inline dimenze) a `0021` (rozšíření MV `fiscal_year_totals` o 8 hodnotových sloupců
-
-- 2 pre-computed schodky). ETL parser dostal Czech trailing minus podporu.
+**Implementace** v migracích `0000` (schéma `budget_facts` — jeden řádek per plně
+kvalifikovaný tuple, 5 hodnotových sloupců side-by-side, inline dimenze) a `0001`
+(MV `fiscal_year_totals` s 8 hodnotovými sloupci + 2 pre-computed salda).
+ETL parser má Czech trailing minus podporu od počátku.
 
 **Výsledek po auditu:**
 
@@ -79,8 +78,9 @@ v rámci státního rozpočtu (excluding mimorozpočtové zdroje).
 > 271,4 mld. Kč, což představovalo 96,2 % plánovaného salda po novelizaci zákona
 > o státním rozpočtu České republiky na rok 2024 (282,0 mld. Kč)."_
 
-**Náš výpočet:** `fiscal_year_totals.deficit_actual` = `expenditure_actual − revenue_actual`
+**Náš výpočet:** `fiscal_year_totals.balance_actual` = `revenue_actual − expenditure_actual`
 ve SR scope (`funding_source_code IN ('1','4','5') OR IS NULL`).
+Kladné = přebytek, záporné = schodek. Repository vrací toto jako `YearData.balance`.
 
 ### 2. Schodek po očištění o EU/FM (alternative)
 
@@ -104,11 +104,11 @@ svých vlastních (domácích) zdrojů, kdyby neexistovaly EU/FM peníze.
 
 ## Implementace v naší DB
 
-### Schema změny (migrace 0020)
+### Schema (migrace 0000)
 
-`budget_facts` přešel z designu "2 řádky per tuple s `is_approved` flagem" na
-**variantu A**: jeden řádek per (rok, měsíc, OSS, paragraf, položka, dimenze) tuple
-s **5 hodnotovými sloupci side-by-side**:
+`budget_facts` je navržen jako jeden řádek per (rok, měsíc, OSS, paragraf, položka, dimenze) tuple
+s **5 hodnotovými sloupci side-by-side**. Starší alternativa s `is_approved` flagem
+by zachytila jen 2 ze 4 rozpočtových stavů — viz db-schema.md.
 
 | Sloupec            | MIS-RIS   | Význam                                        |
 | ------------------ | --------- | --------------------------------------------- |
@@ -121,22 +121,21 @@ s **5 hodnotovými sloupci side-by-side**:
 Plus 4 nové inline dimenze: `nastroj_code` (#7), `fund_code` (#8), `eds_code` (#9),
 `ucris_code` (#10). Detaily v `docs/db-schema.md`.
 
-### ETL parser fix (Czech trailing minus)
+### ETL parser (Czech trailing minus)
 
 ```typescript
-// app/_etl/misRisParser.ts — parseDecimal
+// app/_services/mis-ris-parser.service.ts — parseDecimal
 if (trimmed.endsWith('-')) trimmed = '-' + trimmed.slice(0, -1)
 ```
 
 Tato úprava sama o sobě snížila diff vs MF o **~5–15 mld na ročních součtech**,
 podle objemu vratek a korekcí v daném roce.
 
-### MV `fiscal_year_totals` (migrace 0021)
+### MV `fiscal_year_totals` (migrace 0001)
 
-11 sloupců: 8 hodnotových (revenue × 4 budget states, expenditure × 4 budget states)
-
-- 2 pre-computed deficit (approved, actual). Repository čte deficit přímo, žádná
-  agregace na úrovni dotazu.
+11 sloupců: `fiscal_year` + 8 hodnotových (revenue × 4 budget states, expenditure × 4 budget states)
++ 2 pre-computed salda (`balance_approved`, `balance_actual`).
+Repository čte saldo přímo z MV, žádná agregace na úrovni dotazu.
 
 ---
 
@@ -150,16 +149,16 @@ Validace proti SZÚ 2024 Sešit G Tabulka 1 a 2b:
 | ---------------------------- | --------------- | ----------------------------- | -------- |
 | Schválený rozpočet — příjmy  | 1940.0          | `revenue_approved` 1940.0     | **0**    |
 | Schválený rozpočet — výdaje  | 2222.0          | `expenditure_approved` 2222.0 | **0**    |
-| Schválený schodek            | 282.0           | `deficit_approved` 282.0      | **0**    |
+| Schválený schodek            | 282.0           | `balance_approved` −282.0     | **0**    |
 | Rozpočet po změnách — příjmy | 1960.2          | `revenue_amended` 1960.2      | **0**    |
 | Rozpočet po změnách — výdaje | 2242.2          | `expenditure_amended` 2242.2  | **0**    |
 | Konečný rozpočet — výdaje    | 2403.9          | `expenditure_final` 2401.0    | −2.9     |
 | **Skutečnost — příjmy**      | **1965.4**      | `revenue_actual` 1962.5       | −2.9     |
 | **Skutečnost — výdaje**      | **2236.8**      | `expenditure_actual` 2234.0   | −2.8     |
-| **Schodek skutečnost**       | **271.4**       | `deficit_actual` 271.5        | **+0.1** |
+| **Schodek skutečnost**       | **271.4**       | `balance_actual` −271.5       | **+0.1** |
 
 **Schválené stavy sedí na haléř.** Skutečnost má strukturální diff −2.8/−2.9 na
-obou stranách, ale výsledný schodek se prakticky shoduje (diff +0.1 = 0.04 %).
+obou stranách, ale výsledné saldo (schodek) se prakticky shoduje (diff 0.1 mld = 0.04 %).
 
 ### Per-rok přehled (Total schodek)
 
@@ -244,7 +243,7 @@ Detaily v `docs/features-roadmap.md` sekce 1.
 - `docs/budget-categorization.md` — UI kategorie a jejich vztah k vyhlášce
 - `docs/subcategories.md` — proč byla level-2 UI hierarchie odložena
 
-Migrace s detailními commit-style komentáři:
+Migrace:
 
-- `app/_db/migrations/0020_budget_facts_full_dimensions.sql`
-- `app/_db/migrations/0021_fiscal_year_totals_with_deficits.sql`
+- `app/_db/migrations/0000_initial_schema.sql` — schema `budget_facts` s plnými dimenzemi
+- `app/_db/migrations/0001_fiscal_year_totals_view.sql` — MV `fiscal_year_totals`
